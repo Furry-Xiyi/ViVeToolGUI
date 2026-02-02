@@ -1,0 +1,320 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- App -->
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>ViVeTool GUI</value>
+  </data>
+  <data name="AppTitle.Text" xml:space="preserve">
+    <value>ViVeTool GUI</value>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>A graphical interface for ViVeTool to manage Windows features</value>
+  </data>
+  
+  <!-- Navigation -->
+  <data name="Nav_EnableDisable.Content" xml:space="preserve">
+    <value>Enable/Disable</value>
+  </data>
+  <data name="Nav_Query.Content" xml:space="preserve">
+    <value>Query</value>
+  </data>
+  <data name="Nav_Reset.Content" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  
+  <!-- Enable/Disable Page -->
+  <data name="EnableDisable_Title.Text" xml:space="preserve">
+    <value>Enable or Disable Feature</value>
+  </data>
+  <data name="EnableDisable_Description.Text" xml:space="preserve">
+    <value>Enable or disable Windows features by their feature ID. You can find feature IDs by using the Query page or through community resources.</value>
+  </data>
+  <data name="EnableDisable_FeatureID.Text" xml:space="preserve">
+    <value>Feature ID</value>
+  </data>
+  <data name="EnableDisable_Variant.Text" xml:space="preserve">
+    <value>Variant (Optional)</value>
+  </data>
+  <data name="EnableDisable_EnableButtonText.Text" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="EnableDisable_DisableButtonText.Text" xml:space="preserve">
+    <value>Disable</value>
+  </data>
+  <data name="EnableDisable_Result.Text" xml:space="preserve">
+    <value>Result:</value>
+  </data>
+  <data name="EnableDisable_InfoBar.Title" xml:space="preserve">
+    <value>Administrator Required</value>
+  </data>
+  <data name="EnableDisable_InfoBar.Message" xml:space="preserve">
+    <value>ViVeTool requires administrator privileges to modify Windows features. Make sure to run this application as administrator.</value>
+  </data>
+  <data name="EnableDisable_InvalidID" xml:space="preserve">
+    <value>Invalid feature ID. Please enter a numeric ID.</value>
+  </data>
+  
+  <!-- Query Page -->
+  <data name="Query_Title.Text" xml:space="preserve">
+    <value>Query Features</value>
+  </data>
+  <data name="Query_Description.Text" xml:space="preserve">
+    <value>View all configured Windows features and their current states. You can export the results to a file for reference.</value>
+  </data>
+  <data name="Query_QueryAllButtonText.Text" xml:space="preserve">
+    <value>Query All</value>
+  </data>
+  <data name="Query_ExportButtonText.Text" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="Query_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search features...(Enter at least three digits)</value>
+  </data>
+  <data name="Query_HeaderID.Text" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="Query_HeaderPriority.Text" xml:space="preserve">
+    <value>Priority</value>
+  </data>
+  <data name="Query_HeaderState.Text" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="Query_HeaderType.Text" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Query_HeaderName.Text" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Export_Success" xml:space="preserve">
+    <value>Features exported successfully!</value>
+  </data>
+  
+  <!-- Reset Page -->
+  <data name="Reset_Title.Text" xml:space="preserve">
+    <value>Reset Features</value>
+  </data>
+  <data name="Reset_Description.Text" xml:space="preserve">
+    <value>Reset feature configurations to default states. Use these options carefully as they will affect all feature settings.</value>
+  </data>
+  <data name="Reset_StandardTitle.Text" xml:space="preserve">
+    <value>Standard Reset</value>
+  </data>
+  <data name="Reset_StandardDescription.Text" xml:space="preserve">
+    <value>Reset custom feature configurations while preserving system defaults.</value>
+  </data>
+  <data name="Reset_StandardButtonText.Text" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Reset_FullTitle.Text" xml:space="preserve">
+    <value>Full Reset</value>
+  </data>
+  <data name="Reset_FullDescription.Text" xml:space="preserve">
+    <value>Completely reset all feature configurations including system defaults. This is a destructive operation.</value>
+  </data>
+  <data name="Reset_FullButtonText.Text" xml:space="preserve">
+    <value>Full Reset</value>
+  </data>
+  <data name="Reset_FixPriorityTitle.Text" xml:space="preserve">
+    <value>Fix Priority</value>
+  </data>
+  <data name="Reset_FixPriorityDescription.Text" xml:space="preserve">
+    <value>Repair feature priority settings that may have become corrupted.</value>
+  </data>
+  <data name="Reset_FixPriorityButtonText.Text" xml:space="preserve">
+    <value>Fix Priority</value>
+  </data>
+  <data name="Reset_WarningInfoBar.Title" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="Reset_WarningInfoBar.Message" xml:space="preserve">
+    <value>Reset operations cannot be undone. A system restart may be required for changes to take effect.</value>
+  </data>
+  <data name="Reset_Result.Text" xml:space="preserve">
+    <value>Result:</value>
+  </data>
+  <data name="Reset_ConfirmTitle" xml:space="preserve">
+    <value>Confirm Reset</value>
+  </data>
+  <data name="Reset_ConfirmMessage" xml:space="preserve">
+    <value>Are you sure you want to reset custom feature configurations? This action cannot be undone.</value>
+  </data>
+  <data name="Reset_FullConfirmTitle" xml:space="preserve">
+    <value>Confirm Full Reset</value>
+  </data>
+  <data name="Reset_FullConfirmMessage" xml:space="preserve">
+    <value>Are you sure you want to perform a full reset? This will reset ALL feature configurations including system defaults. This action cannot be undone and may require a system restart.</value>
+  </data>
+  <data name="Reset_SuccessMessage" xml:space="preserve">
+    <value>Reset completed successfully. A restart may be required.</value>
+  </data>
+  
+  <!-- Settings Page -->
+  <data name="Settings_Title.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_AppearanceGroup.Text" xml:space="preserve">
+    <value>Appearance &amp; Material</value>
+  </data>
+  <data name="Settings_ThemeTitle.Text" xml:space="preserve">
+    <value>App Theme</value>
+  </data>
+  <data name="Settings_ThemeDescription.Text" xml:space="preserve">
+    <value>Select app theme</value>
+  </data>
+  <data name="Settings_ThemeSystem.Content" xml:space="preserve">
+    <value>Use system setting</value>
+  </data>
+  <data name="Settings_ThemeLight.Content" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_ThemeDark.Content" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_MaterialTitle.Text" xml:space="preserve">
+    <value>Background Material</value>
+  </data>
+  <data name="Settings_MaterialDescription.Text" xml:space="preserve">
+    <value>Select background material</value>
+  </data>
+  <data name="Settings_AboutGroup.Text" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="Settings_JoinQQ.Content" xml:space="preserve">
+    <value>Join QQ Group</value>
+  </data>
+  <data name="Settings_JoinDiscord.Content" xml:space="preserve">
+    <value>Join Discord</value>
+  </data>
+  <data name="Settings_Feedback.Content" xml:space="preserve">
+    <value>Send Feedback</value>
+  </data>
+  
+  <!-- Dialogs -->
+  <data name="Dialog_ErrorTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Dialog_SuccessTitle" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="Dialog_Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Dialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Dialog_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  
+  <!-- Commands -->
+  <data name="Command_Success" xml:space="preserve">
+    <value>Command executed successfully.</value>
+  </data>
+  <data name="Command_Failed" xml:space="preserve">
+    <value>Command failed:</value>
+  </data>
+  <data name="Command_Error" xml:space="preserve">
+    <value>An error occurred:</value>
+  </data>
+<data name="Dialog_Success.Title" xml:space="preserve">
+  <value>Success</value>
+</data>
+<data name="Dialog_Success.CloseButtonText" xml:space="preserve">
+  <value>Close</value>
+</data>
+
+<data name="Dialog_ExportOptions.Title" xml:space="preserve">
+  <value>Select Export Formats</value>
+</data>
+<data name="Dialog_ExportOptions.PrimaryButtonText" xml:space="preserve">
+  <value>Export</value>
+</data>
+<data name="Dialog_ExportOptions.CloseButtonText" xml:space="preserve">
+  <value>Cancel</value>
+</data>
+
+<data name="Dialog_ExportOptions_Description.Text" xml:space="preserve">
+  <value>Choose the formats you want to export:</value>
+</data>
+<data name="Dialog_ExportOptions_OptionTxt.Content" xml:space="preserve">
+  <value>Export TXT</value>
+</data>
+<data name="Dialog_ExportOptions_OptionCsv.Content" xml:space="preserve">
+  <value>Export CSV</value>
+</data>
+<data name="Dialog_ExportOptions_OptionJson.Content" xml:space="preserve">
+  <value>Export JSON</value>
+</data>
+
+
+<data name="Dialog_AdminRequiredTitle" xml:space="preserve">
+
+  <value>Administrator Privileges Required</value>
+
+</data>
+
+<data name="Dialog_AdminRequiredMessage" xml:space="preserve">
+
+  <value>This application requires administrator privileges to manage Windows features. Please restart the application and accept the UAC prompt.</value>
+
+</data>
+</root>

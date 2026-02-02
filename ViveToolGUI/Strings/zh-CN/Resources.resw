@@ -1,0 +1,320 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- 应用 -->
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>ViVeTool 图形界面</value>
+  </data>
+  <data name="AppTitle.Text" xml:space="preserve">
+    <value>ViVeTool 图形界面</value>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>ViVeTool 的图形化界面，用于管理 Windows 功能</value>
+  </data>
+  
+  <!-- 导航 -->
+  <data name="Nav_EnableDisable.Content" xml:space="preserve">
+    <value>启用/禁用</value>
+  </data>
+  <data name="Nav_Query.Content" xml:space="preserve">
+    <value>查询</value>
+  </data>
+  <data name="Nav_Reset.Content" xml:space="preserve">
+    <value>重置</value>
+  </data>
+  
+  <!-- 启用/禁用页面 -->
+  <data name="EnableDisable_Title.Text" xml:space="preserve">
+    <value>启用或禁用功能</value>
+  </data>
+  <data name="EnableDisable_Description.Text" xml:space="preserve">
+    <value>通过功能 ID 启用或禁用 Windows 功能。您可以通过查询页面或社区资源找到功能 ID。</value>
+  </data>
+  <data name="EnableDisable_FeatureID.Text" xml:space="preserve">
+    <value>功能 ID</value>
+  </data>
+  <data name="EnableDisable_Variant.Text" xml:space="preserve">
+    <value>变体（可选）</value>
+  </data>
+  <data name="EnableDisable_EnableButtonText.Text" xml:space="preserve">
+    <value>启用</value>
+  </data>
+  <data name="EnableDisable_DisableButtonText.Text" xml:space="preserve">
+    <value>禁用</value>
+  </data>
+  <data name="EnableDisable_Result.Text" xml:space="preserve">
+    <value>结果：</value>
+  </data>
+  <data name="EnableDisable_InfoBar.Title" xml:space="preserve">
+    <value>需要管理员权限</value>
+  </data>
+  <data name="EnableDisable_InfoBar.Message" xml:space="preserve">
+    <value>ViVeTool 需要管理员权限才能修改 Windows 功能。请确保以管理员身份运行此应用程序。</value>
+  </data>
+  <data name="EnableDisable_InvalidID" xml:space="preserve">
+    <value>无效的功能 ID。请输入数字 ID。</value>
+  </data>
+  
+  <!-- 查询页面 -->
+  <data name="Query_Title.Text" xml:space="preserve">
+    <value>查询功能</value>
+  </data>
+  <data name="Query_Description.Text" xml:space="preserve">
+    <value>查看所有已配置的 Windows 功能及其当前状态。您可以将结果导出到文件以供参考。</value>
+  </data>
+  <data name="Query_QueryAllButtonText.Text" xml:space="preserve">
+    <value>查询全部</value>
+  </data>
+  <data name="Query_ExportButtonText.Text" xml:space="preserve">
+    <value>导出</value>
+  </data>
+  <data name="Query_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>搜索功能...(至少输入三位数字)</value>
+  </data>
+  <data name="Query_HeaderID.Text" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="Query_HeaderPriority.Text" xml:space="preserve">
+    <value>优先级</value>
+  </data>
+  <data name="Query_HeaderState.Text" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Query_HeaderType.Text" xml:space="preserve">
+    <value>类型</value>
+  </data>
+  <data name="Query_HeaderName.Text" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="Export_Success" xml:space="preserve">
+    <value>功能导出成功！</value>
+  </data>
+  
+  <!-- 重置页面 -->
+  <data name="Reset_Title.Text" xml:space="preserve">
+    <value>重置功能</value>
+  </data>
+  <data name="Reset_Description.Text" xml:space="preserve">
+    <value>将功能配置重置为默认状态。请谨慎使用这些选项，因为它们会影响所有功能设置。</value>
+  </data>
+  <data name="Reset_StandardTitle.Text" xml:space="preserve">
+    <value>标准重置</value>
+  </data>
+  <data name="Reset_StandardDescription.Text" xml:space="preserve">
+    <value>重置自定义功能配置，同时保留系统默认值。</value>
+  </data>
+  <data name="Reset_StandardButtonText.Text" xml:space="preserve">
+    <value>重置</value>
+  </data>
+  <data name="Reset_FullTitle.Text" xml:space="preserve">
+    <value>完全重置</value>
+  </data>
+  <data name="Reset_FullDescription.Text" xml:space="preserve">
+    <value>完全重置所有功能配置，包括系统默认值。这是一项破坏性操作。</value>
+  </data>
+  <data name="Reset_FullButtonText.Text" xml:space="preserve">
+    <value>完全重置</value>
+  </data>
+  <data name="Reset_FixPriorityTitle.Text" xml:space="preserve">
+    <value>修复优先级</value>
+  </data>
+  <data name="Reset_FixPriorityDescription.Text" xml:space="preserve">
+    <value>修复可能已损坏的功能优先级设置。</value>
+  </data>
+  <data name="Reset_FixPriorityButtonText.Text" xml:space="preserve">
+    <value>修复优先级</value>
+  </data>
+  <data name="Reset_WarningInfoBar.Title" xml:space="preserve">
+    <value>警告</value>
+  </data>
+  <data name="Reset_WarningInfoBar.Message" xml:space="preserve">
+    <value>重置操作无法撤销。更改可能需要重启系统才能生效。</value>
+  </data>
+  <data name="Reset_Result.Text" xml:space="preserve">
+    <value>结果：</value>
+  </data>
+  <data name="Reset_ConfirmTitle" xml:space="preserve">
+    <value>确认重置</value>
+  </data>
+  <data name="Reset_ConfirmMessage" xml:space="preserve">
+    <value>确定要重置自定义功能配置吗？此操作无法撤销。</value>
+  </data>
+  <data name="Reset_FullConfirmTitle" xml:space="preserve">
+    <value>确认完全重置</value>
+  </data>
+  <data name="Reset_FullConfirmMessage" xml:space="preserve">
+    <value>确定要执行完全重置吗？这将重置所有功能配置，包括系统默认值。此操作无法撤销，可能需要重启系统。</value>
+  </data>
+  <data name="Reset_SuccessMessage" xml:space="preserve">
+    <value>重置成功完成。可能需要重启系统。</value>
+  </data>
+  
+  <!-- 设置页面 -->
+  <data name="Settings_Title.Text" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="Settings_AppearanceGroup.Text" xml:space="preserve">
+    <value>外观与材质</value>
+  </data>
+  <data name="Settings_ThemeTitle.Text" xml:space="preserve">
+    <value>应用主题</value>
+  </data>
+  <data name="Settings_ThemeDescription.Text" xml:space="preserve">
+    <value>选择应用主题</value>
+  </data>
+  <data name="Settings_ThemeSystem.Content" xml:space="preserve">
+    <value>跟随系统</value>
+  </data>
+  <data name="Settings_ThemeLight.Content" xml:space="preserve">
+    <value>浅色</value>
+  </data>
+  <data name="Settings_ThemeDark.Content" xml:space="preserve">
+    <value>深色</value>
+  </data>
+  <data name="Settings_MaterialTitle.Text" xml:space="preserve">
+    <value>背景材质</value>
+  </data>
+  <data name="Settings_MaterialDescription.Text" xml:space="preserve">
+    <value>选择背景材质</value>
+  </data>
+  <data name="Settings_AboutGroup.Text" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="Settings_JoinQQ.Content" xml:space="preserve">
+    <value>加入 QQ 群</value>
+  </data>
+  <data name="Settings_JoinDiscord.Content" xml:space="preserve">
+    <value>加入 Discord</value>
+  </data>
+  <data name="Settings_Feedback.Content" xml:space="preserve">
+    <value>发送反馈</value>
+  </data>
+  
+  <!-- 对话框 -->
+  <data name="Dialog_ErrorTitle" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Dialog_SuccessTitle" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Dialog_Confirm" xml:space="preserve">
+    <value>确认</value>
+  </data>
+  <data name="Dialog_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Dialog_Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  
+  <!-- 命令 -->
+  <data name="Command_Success" xml:space="preserve">
+    <value>命令执行成功。</value>
+  </data>
+  <data name="Command_Failed" xml:space="preserve">
+    <value>命令执行失败：</value>
+  </data>
+  <data name="Command_Error" xml:space="preserve">
+    <value>发生错误：</value>
+  </data>
+<data name="Dialog_Success.Title" xml:space="preserve">
+  <value>操作成功</value>
+</data>
+<data name="Dialog_Success.CloseButtonText" xml:space="preserve">
+  <value>关闭</value>
+</data>
+
+<data name="Dialog_ExportOptions.Title" xml:space="preserve">
+  <value>选择导出格式</value>
+</data>
+<data name="Dialog_ExportOptions.PrimaryButtonText" xml:space="preserve">
+  <value>导出</value>
+</data>
+<data name="Dialog_ExportOptions.CloseButtonText" xml:space="preserve">
+  <value>取消</value>
+</data>
+
+<data name="Dialog_ExportOptions_Description.Text" xml:space="preserve">
+  <value>请选择要导出的文件格式：</value>
+</data>
+<data name="Dialog_ExportOptions_OptionTxt.Content" xml:space="preserve">
+  <value>导出 TXT</value>
+</data>
+<data name="Dialog_ExportOptions_OptionCsv.Content" xml:space="preserve">
+  <value>导出 CSV</value>
+</data>
+<data name="Dialog_ExportOptions_OptionJson.Content" xml:space="preserve">
+  <value>导出 JSON</value>
+</data>
+
+
+<data name="Dialog_AdminRequiredTitle" xml:space="preserve">
+
+  <value>需要管理员权限</value>
+
+</data>
+
+<data name="Dialog_AdminRequiredMessage" xml:space="preserve">
+
+  <value>此应用程序需要管理员权限才能管理 Windows 功能。请重新启动应用程序并接受 UAC 提示。</value>
+
+</data>
+</root>

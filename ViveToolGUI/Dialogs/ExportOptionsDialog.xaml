@@ -1,0 +1,30 @@
+<ContentDialog
+    x:Class="ViVeToolGUI.Dialogs.ExportOptionsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Uid="Dialog_ExportOptions"
+    PrimaryButtonText=""
+    CloseButtonText=""
+    DefaultButton="Primary"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="16">
+
+        <TextBlock x:Uid="Dialog_ExportOptions_Description"
+                   FontSize="14"
+                   TextWrapping="Wrap"/>
+
+        <CheckBox x:Name="OptionTxt"
+                  x:Uid="Dialog_ExportOptions_OptionTxt"
+                  IsChecked="True"/>
+
+        <CheckBox x:Name="OptionCsv"
+                  x:Uid="Dialog_ExportOptions_OptionCsv"
+                  IsChecked="True"/>
+
+        <CheckBox x:Name="OptionJson"
+                  x:Uid="Dialog_ExportOptions_OptionJson"
+                  IsChecked="False"/>
+
+    </StackPanel>
+</ContentDialog>
