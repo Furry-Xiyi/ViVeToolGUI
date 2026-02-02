@@ -1,0 +1,134 @@
+<Page
+    x:Class="ViVeToolGUI.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <ScrollViewer>
+        <StackPanel Padding="40" Spacing="32">
+            <TextBlock x:Uid="Settings_Title" 
+                      Style="{StaticResource TitleTextBlockStyle}"/>
+
+            <!-- 外观与材质组 -->
+            <StackPanel Spacing="12" HorizontalAlignment="Stretch">
+                <TextBlock x:Uid="Settings_AppearanceGroup" 
+                          FontSize="20" 
+                          FontWeight="SemiBold"/>
+
+                <!-- 应用主题折叠卡 -->
+                <muxc:Expander IsExpanded="False" 
+                              HorizontalAlignment="Stretch" 
+                              HorizontalContentAlignment="Left" 
+                              MinHeight="70">
+                    <muxc:Expander.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <FontIcon Glyph="&#xE706;" Width="30" FontSize="20" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock x:Uid="Settings_ThemeTitle" 
+                                          FontSize="16" 
+                                          FontWeight="SemiBold"/>
+                                <TextBlock x:Uid="Settings_ThemeDescription" 
+                                          FontSize="12" 
+                                          Opacity="0.7"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </muxc:Expander.Header>
+                    <StackPanel Spacing="8" Padding="12,0,0,12" HorizontalAlignment="Left">
+                        <RadioButton x:Name="ThemeSystem" 
+                                    x:Uid="Settings_ThemeSystem" 
+                                    Checked="Theme_Checked"/>
+                        <RadioButton x:Name="ThemeLight" 
+                                    x:Uid="Settings_ThemeLight" 
+                                    Checked="Theme_Checked"/>
+                        <RadioButton x:Name="ThemeDark" 
+                                    x:Uid="Settings_ThemeDark" 
+                                    Checked="Theme_Checked"/>
+                    </StackPanel>
+                </muxc:Expander>
+
+                <!-- 背景材质折叠卡 -->
+                <muxc:Expander IsExpanded="False" 
+                              HorizontalAlignment="Stretch" 
+                              HorizontalContentAlignment="Left" 
+                              MinHeight="70">
+                    <muxc:Expander.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <FontIcon Glyph="&#xE2B1;" Width="30" FontSize="20" VerticalAlignment="Center"/>
+                            <StackPanel>
+                                <TextBlock x:Uid="Settings_MaterialTitle" 
+                                          FontSize="16" 
+                                          FontWeight="SemiBold"/>
+                                <TextBlock x:Uid="Settings_MaterialDescription" 
+                                          FontSize="12" 
+                                          Opacity="0.7"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </muxc:Expander.Header>
+                    <StackPanel Spacing="8" Padding="12,0,0,12" HorizontalAlignment="Left">
+                        <RadioButton x:Name="MaterialAcrylic" 
+                                    Content="Acrylic" 
+                                    Checked="Material_Checked"/>
+                        <RadioButton x:Name="MaterialMica" 
+                                    Content="Mica" 
+                                    Checked="Material_Checked"/>
+                        <RadioButton x:Name="MaterialMicaAlt" 
+                                    Content="Mica Alt" 
+                                    Checked="Material_Checked"/>
+                    </StackPanel>
+                </muxc:Expander>
+            </StackPanel>
+
+            <!-- 关于组 -->
+            <StackPanel Spacing="12" HorizontalAlignment="Stretch">
+                <TextBlock x:Uid="Settings_AboutGroup" 
+                          FontSize="20" 
+                          FontWeight="SemiBold"/>
+
+                <muxc:Expander IsExpanded="False" 
+                              HorizontalAlignment="Stretch" 
+                              HorizontalContentAlignment="Left" 
+                              MinHeight="100">
+                    <muxc:Expander.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Image Source="ms-appx:///Assets/AppIcon.ico"
+                                  Width="48" 
+                                  Height="48" 
+                                  Stretch="UniformToFill"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="AppTitle" 
+                                          FontSize="18" 
+                                          FontWeight="SemiBold"/>
+                                <TextBlock x:Name="AppPublisher" 
+                                          FontSize="12" 
+                                          Opacity="0.7"/>
+                                <TextBlock x:Name="AppVersion" 
+                                          FontSize="12" 
+                                          Opacity="0.7"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </muxc:Expander.Header>
+
+                    <!-- 展开内容 -->
+                    <StackPanel Spacing="8" Padding="12,8,0,12" HorizontalAlignment="Left">
+                        <HyperlinkButton x:Name="JoinQQButton"
+                                        x:Uid="Settings_JoinQQ"
+                                        NavigateUri="https://qm.qq.com/YOUR_QQ_GROUP"
+                                        HorizontalAlignment="Left"/>
+                        <HyperlinkButton x:Name="JoinDiscordButton"
+                                        x:Uid="Settings_JoinDiscord"
+                                        NavigateUri="https://discord.gg/YOUR_DISCORD"
+                                        HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </muxc:Expander>
+            </StackPanel>
+
+            <!-- 发送反馈按钮 -->
+            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,20">
+                <FontIcon Glyph="&#xE939;" FontSize="20" VerticalAlignment="Center"/>
+                <HyperlinkButton x:Name="FeedbackButton"
+                                x:Uid="Settings_Feedback"
+                                NavigateUri="https://github.com/YourRepo/ViVeToolGUI/issues"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

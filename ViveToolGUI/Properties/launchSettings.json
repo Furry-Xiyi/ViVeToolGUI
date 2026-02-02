@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ViveToolGUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "ViveToolGUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

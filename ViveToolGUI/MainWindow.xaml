@@ -1,0 +1,81 @@
+<Window
+    x:Class="ViVeToolGUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+        <!-- Splash Screen Overlay -->
+        <Grid x:Name="SplashOverlay" 
+              Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+              Visibility="Collapsed"
+              Canvas.ZIndex="999">
+            <Viewbox Stretch="Uniform" MaxWidth="620" MaxHeight="300">
+                <Grid Width="620" Height="300">
+                    <Image x:Name="SplashImage" 
+                           Source="ms-appx:///Assets/SplashScreen.png"
+                           Stretch="Uniform"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+                    <ProgressRing IsActive="True"
+                                 Width="60"
+                                 Height="60"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Bottom"
+                                 Margin="0,0,0,60"/>
+                </Grid>
+            </Viewbox>
+        </Grid>
+
+        <!-- Title Bar -->
+        <Grid x:Name="AppTitleBar" 
+              Height="32"
+              VerticalAlignment="Top"
+              Canvas.ZIndex="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Image Source="ms-appx:///Assets/AppIcon.ico"
+                   Width="16"
+                   Height="16"
+                   Margin="12,0,0,0"/>
+
+            <TextBlock x:Name="AppTitle"
+                      Grid.Column="1"
+                      x:Uid="AppTitle"
+                      Style="{StaticResource CaptionTextBlockStyle}"
+                      VerticalAlignment="Center"
+                      Margin="12,0,0,0"/>
+        </Grid>
+
+        <!-- Main Content -->
+        <Grid Margin="0,32,0,0">
+            <NavigationView x:Name="NavView"
+                           PaneDisplayMode="Left"
+                           IsBackButtonVisible="Collapsed"
+                           IsSettingsVisible="True"
+                           SelectionChanged="NavView_SelectionChanged">
+                <NavigationView.MenuItems>
+                    <NavigationViewItem x:Uid="Nav_EnableDisable" Tag="EnableDisable">
+                        <NavigationViewItem.Icon>
+                            <FontIcon Glyph="&#xE7C3;"/>
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem x:Uid="Nav_Query" Tag="Query">
+                        <NavigationViewItem.Icon>
+                            <FontIcon Glyph="&#xE721;"/>
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem x:Uid="Nav_Reset" Tag="Reset">
+                        <NavigationViewItem.Icon>
+                            <FontIcon Glyph="&#xE777;"/>
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </NavigationView.MenuItems>
+
+                <Frame x:Name="ContentFrame"/>
+            </NavigationView>
+        </Grid>
+    </Grid>
+</Window>

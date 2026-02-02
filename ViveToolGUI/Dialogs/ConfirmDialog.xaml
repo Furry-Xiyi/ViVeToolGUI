@@ -1,0 +1,21 @@
+<ContentDialog
+    x:Class="ViVeToolGUI.Dialogs.ConfirmDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Uid="Dialog_Confirm"
+    PrimaryButtonText=""
+    CloseButtonText=""
+    DefaultButton="Primary"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="16">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <FontIcon Glyph="&#xE7BA;" 
+                     Foreground="{ThemeResource SystemFillColorCautionBrush}" 
+                     FontSize="24"/>
+            <TextBlock x:Name="ConfirmMessage" 
+                      TextWrapping="Wrap" 
+                      VerticalAlignment="Center"/>
+        </StackPanel>
+    </StackPanel>
+</ContentDialog>

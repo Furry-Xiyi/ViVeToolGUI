@@ -1,0 +1,21 @@
+<ContentDialog
+    x:Class="ViVeToolGUI.Dialogs.SuccessDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Uid="Dialog_Success"
+    PrimaryButtonText=""
+    CloseButtonText=""
+    DefaultButton="Close"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <StackPanel Spacing="16">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <FontIcon Glyph="&#xE73E;" 
+                     Foreground="{ThemeResource SystemFillColorSuccessBrush}" 
+                     FontSize="24"/>
+            <TextBlock x:Name="SuccessMessage" 
+                      TextWrapping="Wrap" 
+                      VerticalAlignment="Center"/>
+        </StackPanel>
+    </StackPanel>
+</ContentDialog>
