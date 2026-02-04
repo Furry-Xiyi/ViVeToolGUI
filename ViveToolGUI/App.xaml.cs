@@ -14,6 +14,7 @@ namespace ViVeToolGUI
         public static Window MainWindow { get; private set; }
         public static MainWindow MainWindowInstance { get; private set; }
         public static string ViVeToolPath { get; private set; }
+        private static bool _vivetoolInitialized = false;
 
         public App()
         {
@@ -35,28 +36,24 @@ namespace ViVeToolGUI
 
             mainInstance.Activated += OnActivated;
 
-            // 创建窗口（尽快显示）
+            _ = InitializeViVeToolAsync();
+
+            // 创建窗口
             var win = new MainWindow();
             MainWindowInstance = win;
             MainWindow = win;
 
-            // 显示启动画面
+            // 应用主题
+            ApplyGlobalTheme();
+
+            // 应用材质
+            win.ApplyMaterial(GetSavedMaterial());
+
+
             win.ShowSplashOverlay();
 
-            // 激活窗口（立即显示）
+            // 激活窗口
             win.Activate();
-
-            // 延迟应用主题和材质（不阻塞启动）
-            win.DispatcherQueue.TryEnqueue(() =>
-            {
-                ApplyGlobalTheme();
-                win.ApplyMaterial(GetSavedMaterial());
-            });
-
-            // 延迟初始化 ViVeTool（不阻塞启动）
-            _ = Task.Run(InitializeViVeToolAsync);
-
-            // 缩短启动画面时间
             _ = InitializeAppAsync();
         }
 
@@ -68,32 +65,25 @@ namespace ViVeToolGUI
             });
         }
 
-        private async Task InitializeAppAsync()
-        {
-            await Task.Delay(1500);
-            MainWindowInstance?.HideSplashOverlay();
-        }
+         private async Task InitializeAppAsync()
+         {
+             await Task.Delay(1500);
+             MainWindowInstance?.HideSplashOverlay();
+         }
 
         private async Task InitializeViVeToolAsync()
         {
+            if (_vivetoolInitialized) return;
+
             try
             {
+                Debug.WriteLine("[InitViVeTool] Starting initialization...");
+
                 string programData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
                 string vivetoolDir = Path.Combine(programData, "ViVeToolGUI");
-                string targetExe = Path.Combine(vivetoolDir, "ViVeTool.exe");
-                string flagFile = Path.Combine(vivetoolDir, "initialized.flag");
 
-                // 如果已经初始化过 → 秒返回
-                if (File.Exists(flagFile) && File.Exists(targetExe))
-                {
-                    ViVeToolPath = targetExe;
-                    return;
-                }
-
-                // 确保目录存在
                 Directory.CreateDirectory(vivetoolDir);
 
-                // 检测架构
                 string arch = RuntimeInformation.ProcessArchitecture switch
                 {
                     Architecture.X64 => "x64",
@@ -101,28 +91,49 @@ namespace ViVeToolGUI
                     _ => "x64"
                 };
 
-                // 复制文件
-                var installFolder = Windows.ApplicationModel.Package.Current.InstalledLocation;
-                var assetsFolder = await installFolder.GetFolderAsync("Assets");
-                var archFolder = await assetsFolder.GetFolderAsync(arch);
-                var files = await archFolder.GetFilesAsync();
+                string targetExe = Path.Combine(vivetoolDir, "ViVeTool.exe");
 
-                var targetFolder = await StorageFolder.GetFolderFromPathAsync(vivetoolDir);
-
-                foreach (var file in files)
+                // 检查是否需要复制
+                if (!File.Exists(targetExe))
                 {
-                    await file.CopyAsync(targetFolder, file.Name, NameCollisionOption.ReplaceExisting);
+                    Debug.WriteLine($"[InitViVeTool] Copying files from Assets/{arch}...");
+
+                    var installFolder = Windows.ApplicationModel.Package.Current.InstalledLocation;
+                    var assetsFolder = await installFolder.GetFolderAsync("Assets");
+                    var archFolder = await assetsFolder.GetFolderAsync(arch);
+                    var files = await archFolder.GetFilesAsync();
+                    var targetFolder = await StorageFolder.GetFolderFromPathAsync(vivetoolDir);
+
+                    foreach (var file in files)
+                    {
+                        await file.CopyAsync(targetFolder, file.Name, NameCollisionOption.ReplaceExisting);
+                    }
                 }
 
-                // 写入初始化标记
-                File.WriteAllText(flagFile, "ok");
-
                 ViVeToolPath = targetExe;
+                _vivetoolInitialized = true;
+
+                Debug.WriteLine($"[InitViVeTool] SUCCESS! Path: {ViVeToolPath}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[InitViVeTool] EXCEPTION: {ex.Message}");
+                Debug.WriteLine($"[InitViVeTool] ERROR: {ex.Message}");
             }
+        }
+
+        // 🔥 添加等待初始化完成的方法
+        public static async Task<bool> EnsureViVeToolInitializedAsync()
+        {
+            if (_vivetoolInitialized) return true;
+
+            // 最多等待5秒
+            for (int i = 0; i < 50; i++)
+            {
+                if (_vivetoolInitialized) return true;
+                await Task.Delay(100);
+            }
+
+            return _vivetoolInitialized;
         }
 
         public static void ApplyGlobalTheme()

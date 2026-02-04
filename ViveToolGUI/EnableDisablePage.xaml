@@ -30,13 +30,33 @@
             <!-- 变体选项 -->
             <StackPanel Spacing="12">
                 <TextBlock x:Uid="EnableDisable_Variant" 
-                          FontSize="16" 
-                          FontWeight="SemiBold"/>
-                <NumberBox x:Name="VariantNumberBox" 
-                          Minimum="0" 
-                          Maximum="255"
-                          SpinButtonPlacementMode="Inline"
-                          PlaceholderText="0"/>
+              FontSize="16" 
+              FontWeight="SemiBold"/>
+
+                <StackPanel Spacing="8">
+                    <ComboBox x:Name="VariantModeComboBox" 
+                  Width="300"
+                  HorizontalAlignment="Left"
+                  SelectionChanged="VariantModeComboBox_SelectionChanged">
+                        <ComboBoxItem Content="Custom (Number)" IsSelected="True" Tag="Custom"/>
+                        <ComboBoxItem Content="Default" Tag="Default"/>
+                        <ComboBoxItem Content="Clear" Tag="Clear"/>
+                    </ComboBox>
+
+                    <NumberBox x:Name="VariantNumberBox" 
+                  x:Uid="EnableDisable_VariantNumber"
+                  Minimum="0" 
+                  Maximum="255"
+                  SpinButtonPlacementMode="Inline"
+                  PlaceholderText="0"
+                  Width="300"
+                  HorizontalAlignment="Left"/>
+                </StackPanel>
+
+                <TextBlock x:Uid="EnableDisable_VariantDescription"
+              TextWrapping="Wrap"
+              Opacity="0.6"
+              FontSize="12"/>
             </StackPanel>
 
             <!-- 操作按钮 -->

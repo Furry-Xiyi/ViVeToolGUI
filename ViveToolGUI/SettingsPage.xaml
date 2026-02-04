@@ -127,7 +127,7 @@
                 <FontIcon Glyph="&#xE939;" FontSize="20" VerticalAlignment="Center"/>
                 <HyperlinkButton x:Name="FeedbackButton"
                                 x:Uid="Settings_Feedback"
-                                NavigateUri="https://github.com/YourRepo/ViVeToolGUI/issues"/>
+                                NavigateUri="https://github.com/Furry-Xiyi/ViVeToolGUI/issues"/>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

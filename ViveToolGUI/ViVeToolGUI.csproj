@@ -11,11 +11,11 @@
     <UseWinUI>true</UseWinUI>
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
+	<TrimMode>partial</TrimMode>
     <Nullable>enable</Nullable>
-	  <SelfContained>false</SelfContained>
-  <PublishTrimmed>false</PublishTrimmed>
-	  
-	  <PublishAot>true</PublishAot>
+	<SelfContained>false</SelfContained>
+    <PublishTrimmed>false</PublishTrimmed>
+	<PublishAot>true</PublishAot>
 	<StripSymbols>true</StripSymbols>
   </PropertyGroup>
   <ItemGroup>
@@ -39,6 +39,7 @@
     <None Remove="QueryPage.xaml" />
     <None Remove="ResetPage.xaml" />
     <None Remove="SettingsPage.xaml" />
+    <None Remove="SubfeaturesPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -110,6 +111,9 @@
     <None Update="Assets\x64\ViVeTool.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="SubfeaturesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Dialogs\ExportOptionsDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -175,7 +179,7 @@
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <GenerateTestArtifacts>False</GenerateTestArtifacts>
     <AppxBundle>Never</AppxBundle>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
   </PropertyGroup>

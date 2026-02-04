@@ -61,6 +61,11 @@
                             <FontIcon Glyph="&#xE721;"/>
                         </NavigationViewItem.Icon>
                     </NavigationViewItem>
+                    <!-- <NavigationViewItem x:Uid="Nav_Subfeatures" Tag="Subfeatures">
+                        <NavigationViewItem.Icon>
+                            <FontIcon Glyph="&#xE8F4;"/>
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem> -->
                     <NavigationViewItem x:Uid="Nav_Reset" Tag="Reset">
                         <NavigationViewItem.Icon>
                             <FontIcon Glyph="&#xE777;"/>

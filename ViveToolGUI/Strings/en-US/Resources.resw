@@ -77,6 +77,7 @@
   <data name="Nav_Query.Content" xml:space="preserve">
     <value>Query</value>
   </data>
+
   <data name="Nav_Reset.Content" xml:space="preserve">
     <value>Reset</value>
   </data>
@@ -112,7 +113,13 @@
   <data name="EnableDisable_InvalidID" xml:space="preserve">
     <value>Invalid feature ID. Please enter a numeric ID.</value>
   </data>
-  
+  <data name="EnableDisable_VariantNumber" xml:space="preserve">
+  <value>Custom Variant Number</value>
+</data>
+<data name="EnableDisable_VariantDescription" xml:space="preserve">
+  <value>Custom: Specify a number (0-255). Default: Use system default variant. Clear: Remove variant configuration.</value>
+</data>
+
   <!-- Query Page -->
   <data name="Query_Title.Text" xml:space="preserve">
     <value>Query Features</value>
@@ -207,6 +214,81 @@
     <value>Reset completed successfully. A restart may be required.</value>
   </data>
   
+<!-- Subfeatures Page -->
+<data name="Subfeatures_Title.Text" xml:space="preserve">
+  <value>Subfeature Management</value>
+</data>
+<data name="Subfeatures_Description.Text" xml:space="preserve">
+  <value>Query, add, or delete subfeatures for Windows features.</value>
+</data>
+
+<!-- Query Subfeatures -->
+<data name="Subfeatures_QueryTitle.Text" xml:space="preserve">
+  <value>Query Subfeatures</value>
+</data>
+<data name="Subfeatures_QueryDescription.Text" xml:space="preserve">
+  <value>View all subfeatures associated with a feature ID.</value>
+</data>
+<data name="Subfeatures_QueryFeatureID.Text" xml:space="preserve">
+  <value>Feature ID</value>
+</data>
+<data name="Subfeatures_QueryButton.Content" xml:space="preserve">
+  <value>Query Subfeatures</value>
+</data>
+<data name="Subfeatures_QueryButtonText.Text" xml:space="preserve">
+  <value>Query</value>
+</data>
+
+<!-- Add Subfeature -->
+<data name="Subfeatures_AddTitle.Text" xml:space="preserve">
+  <value>Add Subfeature</value>
+</data>
+<data name="Subfeatures_AddDescription.Text" xml:space="preserve">
+  <value>Add a new subfeature to an existing feature.</value>
+</data>
+<data name="Subfeatures_AddFeatureID.Text" xml:space="preserve">
+  <value>Feature ID</value>
+</data>
+<data name="Subfeatures_AddSubID.Text" xml:space="preserve">
+  <value>Subfeature ID</value>
+</data>
+<data name="Subfeatures_AddButton.Content" xml:space="preserve">
+  <value>Add Subfeature</value>
+</data>
+<data name="Subfeatures_AddButtonText.Text" xml:space="preserve">
+  <value>Add</value>
+</data>
+
+<!-- Delete Subfeature -->
+<data name="Subfeatures_DeleteTitle.Text" xml:space="preserve">
+  <value>Delete Subfeature</value>
+</data>
+<data name="Subfeatures_DeleteDescription.Text" xml:space="preserve">
+  <value>Remove a subfeature from an existing feature.</value>
+</data>
+<data name="Subfeatures_DelFeatureID.Text" xml:space="preserve">
+  <value>Feature ID</value>
+</data>
+<data name="Subfeatures_DelSubID.Text" xml:space="preserve">
+  <value>Subfeature ID</value>
+</data>
+<data name="Subfeatures_DelButton.Content" xml:space="preserve">
+  <value>Delete Subfeature</value>
+</data>
+<data name="Subfeatures_DelButtonText.Text" xml:space="preserve">
+  <value>Delete</value>
+</data>
+
+<!-- Result -->
+<data name="Subfeatures_Result.Text" xml:space="preserve">
+  <value>Result</value>
+</data>
+
+<!-- Success Dialog Updates -->
+<data name="Dialog_Success/CloseButtonText" xml:space="preserve">
+  <value>Close</value>
+</data>
+
   <!-- Settings Page -->
   <data name="Settings_Title.Text" xml:space="preserve">
     <value>Settings</value>

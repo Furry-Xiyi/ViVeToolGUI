@@ -410,6 +410,9 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
                         case "Query":
                             ContentFrame.Navigate(typeof(QueryPage));
                             break;
+                        case "Subfeatures":
+                            ContentFrame.Navigate(typeof(SubfeaturesPage));
+                            break;
                         case "Reset":
                             ContentFrame.Navigate(typeof(ResetPage));
                             break;

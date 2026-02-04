@@ -1,0 +1,178 @@
+<Page
+    x:Class="ViVeToolGUI.SubfeaturesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ViVeToolGUI"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <ScrollViewer>
+        <StackPanel Padding="40" Spacing="32">
+            <TextBlock x:Uid="Subfeatures_Title" 
+                      Style="{StaticResource TitleTextBlockStyle}"/>
+
+            <TextBlock x:Uid="Subfeatures_Description" 
+                      Style="{StaticResource BodyTextBlockStyle}"
+                      TextWrapping="Wrap"
+                      Opacity="0.7"/>
+
+            <!-- 查询子功能 -->
+            <Border BorderThickness="1" 
+                   BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                   Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                   CornerRadius="8"
+                   Padding="20">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <FontIcon Glyph="&#xE721;" FontSize="24"/>
+                        <StackPanel>
+                            <TextBlock x:Uid="Subfeatures_QueryTitle" 
+                                      FontSize="18" 
+                                      FontWeight="SemiBold"/>
+                            <TextBlock x:Uid="Subfeatures_QueryDescription" 
+                                      TextWrapping="Wrap" 
+                                      Opacity="0.7"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <TextBox x:Name="QuerySubFeatureIDTextBox" 
+                            x:Uid="Subfeatures_QueryFeatureID"
+                            PlaceholderText="12345678"
+                            TextChanged="QuerySubFeatureIDTextBox_TextChanged"/>
+
+                    <Button x:Name="QuerySubsButton" 
+                           x:Uid="Subfeatures_QueryButton"
+                           Style="{StaticResource AccentButtonStyle}"
+                           Click="QuerySubsButton_Click"
+                           IsEnabled="False">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE721;" FontSize="16"/>
+                            <TextBlock x:Uid="Subfeatures_QueryButtonText"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- 子功能列表 -->
+                    <Border x:Name="SubfeaturesListBorder"
+                           BorderThickness="1" 
+                           BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                           Background="{ThemeResource LayerFillColorDefaultBrush}"
+                           CornerRadius="4"
+                           Padding="12"
+                           Visibility="Collapsed">
+                        <ScrollViewer MaxHeight="200">
+                            <TextBlock x:Name="SubfeaturesListText" 
+                                      FontFamily="Consolas"
+                                      TextWrapping="Wrap"/>
+                        </ScrollViewer>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- 添加子功能 -->
+            <Border BorderThickness="1" 
+                   BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                   Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                   CornerRadius="8"
+                   Padding="20">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <FontIcon Glyph="&#xE710;" FontSize="24" Foreground="{ThemeResource SystemFillColorSuccessBrush}"/>
+                        <StackPanel>
+                            <TextBlock x:Uid="Subfeatures_AddTitle" 
+                                      FontSize="18" 
+                                      FontWeight="SemiBold"/>
+                            <TextBlock x:Uid="Subfeatures_AddDescription" 
+                                      TextWrapping="Wrap" 
+                                      Opacity="0.7"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <TextBox x:Name="AddFeatureIDTextBox" 
+                            x:Uid="Subfeatures_AddFeatureID"
+                            PlaceholderText="12345678"
+                            TextChanged="AddFeatureIDTextBox_TextChanged"/>
+
+                    <TextBox x:Name="AddSubIDTextBox" 
+                            x:Uid="Subfeatures_AddSubID"
+                            PlaceholderText="87654321"
+                            TextChanged="AddSubIDTextBox_TextChanged"/>
+
+                    <Button x:Name="AddSubButton" 
+                           x:Uid="Subfeatures_AddButton"
+                           Style="{StaticResource AccentButtonStyle}"
+                           Background="{ThemeResource SystemFillColorSuccessBrush}"
+                           Click="AddSubButton_Click"
+                           IsEnabled="False">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE710;" FontSize="16"/>
+                            <TextBlock x:Uid="Subfeatures_AddButtonText"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- 删除子功能 -->
+            <Border BorderThickness="1" 
+                   BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                   Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                   CornerRadius="8"
+                   Padding="20">
+                <StackPanel Spacing="16">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <FontIcon Glyph="&#xE74D;" 
+                                 FontSize="24" 
+                                 Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
+                        <StackPanel>
+                            <TextBlock x:Uid="Subfeatures_DeleteTitle" 
+                                      FontSize="18" 
+                                      FontWeight="SemiBold"/>
+                            <TextBlock x:Uid="Subfeatures_DeleteDescription" 
+                                      TextWrapping="Wrap" 
+                                      Opacity="0.7"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <TextBox x:Name="DelFeatureIDTextBox" 
+                            x:Uid="Subfeatures_DelFeatureID"
+                            PlaceholderText="12345678"
+                            TextChanged="DelFeatureIDTextBox_TextChanged"/>
+
+                    <TextBox x:Name="DelSubIDTextBox" 
+                            x:Uid="Subfeatures_DelSubID"
+                            PlaceholderText="87654321"
+                            TextChanged="DelSubIDTextBox_TextChanged"/>
+
+                    <Button x:Name="DelSubButton" 
+                           x:Uid="Subfeatures_DelButton"
+                           Style="{StaticResource AccentButtonStyle}"
+                           Background="{ThemeResource SystemFillColorCriticalBrush}"
+                           Click="DelSubButton_Click"
+                           IsEnabled="False">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE74D;" FontSize="16"/>
+                            <TextBlock x:Uid="Subfeatures_DelButtonText"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- 结果显示 -->
+            <Border x:Name="ResultBorder" 
+                   BorderThickness="1" 
+                   BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                   Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                   CornerRadius="8"
+                   Padding="16"
+                   Visibility="Collapsed">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Uid="Subfeatures_Result" 
+                              FontWeight="SemiBold"/>
+                    <ScrollViewer MaxHeight="200">
+                        <TextBlock x:Name="ResultText" 
+                                  TextWrapping="Wrap" 
+                                  FontFamily="Consolas"/>
+                    </ScrollViewer>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -112,7 +112,13 @@
   <data name="EnableDisable_InvalidID" xml:space="preserve">
     <value>无效的功能 ID。请输入数字 ID。</value>
   </data>
-  
+  <data name="EnableDisable_VariantNumber" xml:space="preserve">
+  <value>Custom Variant Number</value>
+</data>
+<data name="EnableDisable_VariantDescription" xml:space="preserve">
+  <value>Custom: Specify a number (0-255). Default: Use system default variant. Clear: Remove variant configuration.</value>
+</data>
+
   <!-- 查询页面 -->
   <data name="Query_Title.Text" xml:space="preserve">
     <value>查询功能</value>
@@ -148,6 +154,84 @@
     <value>功能导出成功！</value>
   </data>
   
+<!-- Subfeatures Page -->
+<data name="Nav_Subfeatures.Content" xml:space="preserve">
+  <value>子功能</value>
+</data>
+<data name="Subfeatures_Title.Text" xml:space="preserve">
+  <value>子功能管理</value>
+</data>
+<data name="Subfeatures_Description.Text" xml:space="preserve">
+  <value>查询、添加或删除 Windows 功能的子功能。</value>
+</data>
+
+<!-- Query Subfeatures -->
+<data name="Subfeatures_QueryTitle.Text" xml:space="preserve">
+  <value>查询子功能</value>
+</data>
+<data name="Subfeatures_QueryDescription.Text" xml:space="preserve">
+  <value>查看与功能 ID 关联的所有子功能。</value>
+</data>
+<data name="Subfeatures_QueryFeatureID.Text" xml:space="preserve">
+  <value>功能 ID</value>
+</data>
+<data name="Subfeatures_QueryButton.Content" xml:space="preserve">
+  <value>查询子功能</value>
+</data>
+<data name="Subfeatures_QueryButtonText.Text" xml:space="preserve">
+  <value>查询</value>
+</data>
+
+<!-- Add Subfeature -->
+<data name="Subfeatures_AddTitle.Text" xml:space="preserve">
+  <value>添加子功能</value>
+</data>
+<data name="Subfeatures_AddDescription.Text" xml:space="preserve">
+  <value>向现有功能添加新的子功能。</value>
+</data>
+<data name="Subfeatures_AddFeatureID.Text" xml:space="preserve">
+  <value>功能 ID</value>
+</data>
+<data name="Subfeatures_AddSubID.Text" xml:space="preserve">
+  <value>子功能 ID</value>
+</data>
+<data name="Subfeatures_AddButton.Content" xml:space="preserve">
+  <value>添加子功能</value>
+</data>
+<data name="Subfeatures_AddButtonText.Text" xml:space="preserve">
+  <value>添加</value>
+</data>
+
+<!-- Delete Subfeature -->
+<data name="Subfeatures_DeleteTitle.Text" xml:space="preserve">
+  <value>删除子功能</value>
+</data>
+<data name="Subfeatures_DeleteDescription.Text" xml:space="preserve">
+  <value>从现有功能中删除子功能。</value>
+</data>
+<data name="Subfeatures_DelFeatureID.Text" xml:space="preserve">
+  <value>功能 ID</value>
+</data>
+<data name="Subfeatures_DelSubID.Text" xml:space="preserve">
+  <value>子功能 ID</value>
+</data>
+<data name="Subfeatures_DelButton.Content" xml:space="preserve">
+  <value>删除子功能</value>
+</data>
+<data name="Subfeatures_DelButtonText.Text" xml:space="preserve">
+  <value>删除</value>
+</data>
+
+<!-- Result -->
+<data name="Subfeatures_Result.Text" xml:space="preserve">
+  <value>结果</value>
+</data>
+
+<!-- Success Dialog Updates -->
+<data name="Dialog_Success/CloseButtonText" xml:space="preserve">
+  <value>关闭</value>
+</data>
+
   <!-- 重置页面 -->
   <data name="Reset_Title.Text" xml:space="preserve">
     <value>重置功能</value>

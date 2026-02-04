@@ -12,12 +12,28 @@ namespace ViVeToolGUI
     public sealed partial class EnableDisablePage : Page
     {
         private readonly ResourceLoader _resourceLoader;
-
+        private string _variantMode = "Custom";
         public EnableDisablePage()
         {
             this.InitializeComponent();
             this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
             _resourceLoader = ResourceLoader.GetForViewIndependentUse();
+        }
+
+        private void VariantModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (VariantModeComboBox.SelectedItem is ComboBoxItem item)
+            {
+                _variantMode = item.Tag?.ToString() ?? "Custom";
+
+                // 根据模式显示/隐藏 NumberBox
+                //VariantNumberBox.IsEnabled = _variantMode == "Custom";
+
+                if (_variantMode != "Custom")
+                {
+                    VariantNumberBox.Value = 0;
+                }
+            }
         }
 
         private void FeatureIDTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -53,7 +69,6 @@ namespace ViVeToolGUI
         private async Task ExecuteFeatureCommandAsync(bool enable)
         {
             string featureIds = FeatureIDTextBox.Text;
-            int variant = (int)VariantNumberBox.Value;
 
             EnableButton.IsEnabled = false;
             DisableButton.IsEnabled = false;
@@ -61,7 +76,6 @@ namespace ViVeToolGUI
 
             try
             {
-                // 规范化 ID 列表：去掉空格，只保留逗号分隔
                 var ids = featureIds
                     .Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(id => id.Trim())
@@ -76,13 +90,25 @@ namespace ViVeToolGUI
                 }
 
                 string idArg = string.Join(",", ids);
-
                 string action = enable ? "/enable" : "/disable";
                 string arguments = $"{action} /id:{idArg}";
 
-                if (variant > 0)
+                // 🔥 改进的 Variant 参数构建
+                switch (_variantMode)
                 {
-                    arguments += $" /variant:{variant}";
+                    case "Default":
+                        arguments += " /variant:default";
+                        break;
+                    case "Clear":
+                        arguments += " /variant:clear";
+                        break;
+                    case "Custom":
+                        int variant = (int)VariantNumberBox.Value;
+                        if (variant > 0)
+                        {
+                            arguments += $" /variant:{variant}";
+                        }
+                        break;
                 }
 
                 var result = await MainWindow.ExecuteViVeToolCommandAsync(arguments);
@@ -91,7 +117,6 @@ namespace ViVeToolGUI
 
                 if (result.ExitCode == 0)
                 {
-                    // 这里你可以简单显示原始输出，或者自己格式化
                     ResultText.Text = string.IsNullOrWhiteSpace(result.Output)
                         ? "Success"
                         : result.Output;
