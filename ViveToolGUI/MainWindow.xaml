@@ -46,7 +46,7 @@
         <!-- Main Content -->
         <Grid Margin="0,32,0,0">
             <NavigationView x:Name="NavView"
-                           PaneDisplayMode="Left"
+                           PaneDisplayMode="Auto"
                            IsBackButtonVisible="Collapsed"
                            IsSettingsVisible="True"
                            SelectionChanged="NavView_SelectionChanged">

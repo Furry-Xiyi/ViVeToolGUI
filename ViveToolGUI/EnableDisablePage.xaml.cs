@@ -22,12 +22,14 @@ namespace ViVeToolGUI
 
         private void VariantModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (VariantModeComboBox == null || VariantNumberBox == null)
+                return;
+
             if (VariantModeComboBox.SelectedItem is ComboBoxItem item)
             {
                 _variantMode = item.Tag?.ToString() ?? "Custom";
 
-                // 根据模式显示/隐藏 NumberBox
-                //VariantNumberBox.IsEnabled = _variantMode == "Custom";
+                VariantNumberBox.IsEnabled = _variantMode == "Custom";
 
                 if (_variantMode != "Custom")
                 {

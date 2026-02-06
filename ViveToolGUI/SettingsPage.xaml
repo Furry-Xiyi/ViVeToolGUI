@@ -84,7 +84,7 @@
                           FontSize="20" 
                           FontWeight="SemiBold"/>
 
-                <muxc:Expander IsExpanded="False" 
+                <muxc:Expander IsExpanded="True" 
                               HorizontalAlignment="Stretch" 
                               HorizontalContentAlignment="Left" 
                               MinHeight="100">

@@ -1,5 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
@@ -7,10 +9,11 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.Resources;
 using Windows.Storage;
-using Windows.Storage.Pickers;
 using WinRT.Interop;
+using System.Collections.ObjectModel;
 
 namespace ViVeToolGUI
 {
@@ -26,58 +29,156 @@ namespace ViVeToolGUI
     public sealed partial class QueryPage : Page
     {
         private readonly ResourceLoader _resourceLoader;
-        private readonly List<FeatureInfo> _allFeatures = new();
-        private CancellationTokenSource _renderCancellation;
-        private DispatcherTimer _searchDebounceTimer;
+        // 保持原始完整数据，用于搜索过滤
+        private List<FeatureInfo> _allFeatures = new();
+
         public QueryPage()
         {
             this.InitializeComponent();
             this.NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
             _resourceLoader = ResourceLoader.GetForViewIndependentUse();
-            _searchDebounceTimer = new DispatcherTimer();
-            _searchDebounceTimer.Interval = TimeSpan.FromMilliseconds(250);
-            _searchDebounceTimer.Tick += SearchDebounceTimer_Tick;
         }
 
         private async void QueryAllButton_Click(object sender, RoutedEventArgs e)
         {
+            const int BatchSize = 50; // 每批添加多少项（可根据情况调小）
             QueryAllButton.IsEnabled = false;
             ExportButton.IsEnabled = false;
-            QueryProgressBar.Visibility = Visibility.Visible;
+            SearchBox.IsEnabled = false;
 
-            _allFeatures.Clear();
+            LoadingOverlay.Visibility = Visibility.Visible;
+            LoadingText.Text = "Querying features...";
+
+            // 清空当前显示（使用 Items.Clear 而不是 ItemsSource）
+            try
+            {
+                FeaturesListView.ItemsSource = null;
+            }
+            catch
+            {
+                // 忽略 ItemsSource 清理可能抛出的异常，继续使用 Items.Clear
+            }
             FeaturesListView.Items.Clear();
 
-            // 取消之前的渲染
-            _renderCancellation?.Cancel();
+            _allFeatures.Clear();
 
             try
             {
+                if (!await App.EnsureViVeToolInitializedAsync())
+                {
+                    var dialog = new Dialogs.ErrorDialog("ViVeTool is still initializing. Please wait and try again.");
+                    dialog.XamlRoot = this.XamlRoot;
+                    await dialog.ShowAsync();
+                    return;
+                }
+
                 var result = await MainWindow.ExecuteViVeToolCommandAsync("/query");
 
                 if (this.Frame == null || this.Frame.Content != this)
                     return;
 
-                if (result.ExitCode == 0)
-                {
-                    ParseQueryOutput(result.Output);
-
-                    System.Diagnostics.Debug.WriteLine($"[QueryPage] Parsed features count = {_allFeatures.Count}");
-
-                    // 异步分批渲染
-                    await RenderFeaturesAsync(_allFeatures);
-
-                    ExportButton.IsEnabled = _allFeatures.Count > 0;
-                }
-                else
+                if (result.ExitCode != 0)
                 {
                     var dialog = new Dialogs.ErrorDialog(result.Error);
                     dialog.XamlRoot = this.XamlRoot;
                     await dialog.ShowAsync();
+                    return;
                 }
+
+                LoadingText.Text = "Parsing results...";
+                await Task.Delay(50); // 给 UI 一点时间更新 Loading 文本
+
+                // 在后台线程解析并返回列表（ParseQueryOutput 返回 List<FeatureInfo>）
+                var parsed = await Task.Run(() => ParseQueryOutput(result.Output) ?? new List<FeatureInfo>());
+
+                System.Diagnostics.Debug.WriteLine($"[Debug] Parsed count = {parsed?.Count ?? 0}");
+                if (parsed != null && parsed.Count > 0)
+                {
+                    var first = parsed[0];
+                    System.Diagnostics.Debug.WriteLine($"[Debug] First Item: ID={first?.Id}, Name={first?.Name}");
+                }
+
+                // 清洗并重建对象，确保字段安全
+                var cleaned = parsed
+                    .Where(f => f != null)
+                    .Select(f => new FeatureInfo
+                    {
+                        Id = Clean(f.Id),
+                        Priority = Clean(f.Priority),
+                        State = Clean(f.State),
+                        Type = Clean(f.Type),
+                        Name = Clean(f.Name)
+                    })
+                    .ToList();
+
+                System.Diagnostics.Debug.WriteLine($"[Debug] Cleaned count = {cleaned.Count}");
+
+                // 分批添加到 ListView.Items（在 UI 线程）
+                int total = cleaned.Count;
+                int added = 0;
+
+                while (added < total)
+                {
+                    int take = Math.Min(BatchSize, total - added);
+                    var batch = cleaned.Skip(added).Take(take).ToList();
+
+                    // 在 UI 线程添加这一批
+                    bool enqueued = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread()?.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                    {
+                        try
+                        {
+                            foreach (var feature in batch)
+                            {
+                                try
+                                {
+                                    // 直接添加数据对象，ListView 会使用 ItemTemplate 渲染
+                                    FeaturesListView.Items.Add(feature);
+                                }
+                                catch (Exception addEx)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"[Debug][AddItemError] id={feature?.Id} ex={addEx}");
+                                }
+                            }
+                        }
+                        catch (Exception exInner)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[Debug][BatchAddException] ex={exInner}");
+                        }
+                    }) ?? false;
+
+                    // 如果无法通过 DispatcherQueue 在当前线程入队（极少见），直接在当前上下文添加（UI 线程）
+                    if (!enqueued)
+                    {
+                        foreach (var feature in batch)
+                        {
+                            try
+                            {
+                                FeaturesListView.Items.Add(feature);
+                            }
+                            catch (Exception addEx)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[Debug][AddItemError-Fallback] id={feature?.Id} ex={addEx}");
+                            }
+                        }
+                    }
+
+                    added += take;
+
+                    // 更新 Loading 文本
+                    LoadingText.Text = $"Loaded {added}/{total}";
+
+                    // 给 UI 一点喘息时间，避免一次性占用太多渲染资源
+                    await Task.Delay(60);
+                }
+
+                // 保存成员变量供搜索/导出使用
+                _allFeatures = cleaned;
+
+                ExportButton.IsEnabled = _allFeatures.Count > 0;
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[QueryAllButton_Click] Exception: {ex}");
                 if (this.Frame == null || this.Frame.Content != this)
                     return;
 
@@ -90,17 +191,18 @@ namespace ViVeToolGUI
                 if (this.Frame != null && this.Frame.Content == this)
                 {
                     QueryAllButton.IsEnabled = true;
-                    QueryProgressBar.Visibility = Visibility.Collapsed;
+                    SearchBox.IsEnabled = true;
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
                 }
             }
         }
 
-        private void ParseQueryOutput(string output)
+        private List<FeatureInfo> ParseQueryOutput(string output)
         {
-            _allFeatures.Clear();
+            var tempFeatures = new List<FeatureInfo>();
 
             if (string.IsNullOrWhiteSpace(output))
-                return;
+                return tempFeatures;
 
             output = Regex.Replace(output, @"\x1B\[[0-9;]*m", "");
             output = output.Replace("\uFEFF", "");
@@ -118,11 +220,11 @@ namespace ViVeToolGUI
                 if (idMatch.Success)
                 {
                     if (current != null)
-                        _allFeatures.Add(current);
+                        tempFeatures.Add(current);
 
                     current = new FeatureInfo
                     {
-                        Id = idMatch.Groups[1].Value,
+                        Id = idMatch.Groups[1].Value ?? "",
                         Name = idMatch.Groups[2].Success ? idMatch.Groups[2].Value.Trim() : ""
                     };
                     continue;
@@ -135,7 +237,7 @@ namespace ViVeToolGUI
                 {
                     var m = Regex.Match(line, @"Priority\s*:\s*([A-Za-z]+)");
                     if (m.Success)
-                        current.Priority = m.Groups[1].Value;
+                        current.Priority = m.Groups[1].Value ?? "";
                     continue;
                 }
 
@@ -143,7 +245,7 @@ namespace ViVeToolGUI
                 {
                     var m = Regex.Match(line, @"State\s*:\s*([A-Za-z]+)");
                     if (m.Success)
-                        current.State = m.Groups[1].Value;
+                        current.State = m.Groups[1].Value ?? "";
                     continue;
                 }
 
@@ -151,258 +253,305 @@ namespace ViVeToolGUI
                 {
                     var m = Regex.Match(line, @"Type\s*:\s*([A-Za-z]+)");
                     if (m.Success)
-                        current.Type = m.Groups[1].Value;
+                        current.Type = m.Groups[1].Value ?? "";
                     continue;
                 }
             }
 
             if (current != null)
-                _allFeatures.Add(current);
+                tempFeatures.Add(current);
+
+            return tempFeatures.Where(f => f != null).ToList();
         }
 
-        // 异步分批渲染，每批 100 项，避免 UI 卡死
-        private async Task RenderFeaturesAsync(IEnumerable<FeatureInfo> features)
-        {
-            _renderCancellation?.Cancel();
-            _renderCancellation = new CancellationTokenSource();
-            var token = _renderCancellation.Token;
-
-            FeaturesListView.Items.Clear();
-
-            var featureList = features.ToList();
-            const int batchSize = 100;
-
-            for (int i = 0; i < featureList.Count; i += batchSize)
-            {
-                if (token.IsCancellationRequested)
-                    return;
-
-                var batch = featureList.Skip(i).Take(batchSize);
-
-                foreach (var f in batch)
-                {
-                    if (token.IsCancellationRequested)
-                        return;
-
-                    var item = CreateFeatureItem(f);
-                    FeaturesListView.Items.Add(item);
-                }
-
-                await Task.Delay(10, token);
-            }
-
-            SearchBox.IsEnabled = true;
-
-            System.Diagnostics.Debug.WriteLine($"[RenderFeatures] Finished rendering {FeaturesListView.Items.Count} items");
-        }
-
-        private Grid CreateFeatureItem(FeatureInfo f)
-        {
-            var grid = new Grid
-            {
-                Padding = new Thickness(12),
-                ColumnSpacing = 12,
-                Height = 40
-            };
-
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-
-            // ID
-            var idText = new TextBlock
-            {
-                Text = f.Id ?? "",
-                FontFamily = new FontFamily("Consolas"),
-                VerticalAlignment = VerticalAlignment.Center,
-                FontSize = 14
-            };
-            Grid.SetColumn(idText, 0);
-            grid.Children.Add(idText);
-
-            // Priority
-            var priorityText = new TextBlock
-            {
-                Text = f.Priority ?? "",
-                VerticalAlignment = VerticalAlignment.Center,
-                FontSize = 14
-            };
-            Grid.SetColumn(priorityText, 1);
-            grid.Children.Add(priorityText);
-
-            // State
-            var stateText = new TextBlock
-            {
-                Text = f.State ?? "",
-                VerticalAlignment = VerticalAlignment.Center,
-                FontSize = 14
-            };
-            Grid.SetColumn(stateText, 2);
-            grid.Children.Add(stateText);
-
-            // Type
-            var typeText = new TextBlock
-            {
-                Text = f.Type ?? "",
-                VerticalAlignment = VerticalAlignment.Center,
-                FontSize = 14
-            };
-            Grid.SetColumn(typeText, 3);
-            grid.Children.Add(typeText);
-
-            // Name
-            var nameText = new TextBlock
-            {
-                Text = f.Name ?? "",
-                VerticalAlignment = VerticalAlignment.Center,
-                TextTrimming = TextTrimming.CharacterEllipsis,
-                FontSize = 14
-            };
-            Grid.SetColumn(nameText, 4);
-            grid.Children.Add(nameText);
-
-            return grid;
-        }
-
+        // 搜索功能重写：不再增量渲染，而是直接过滤并重新绑定
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            _searchDebounceTimer.Stop();
-            _searchDebounceTimer.Start();
+            if (_allFeatures.Count == 0)
+                return;
+
+            string text = SearchBox.Text?.ToLower() ?? "";
+
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                FeaturesListView.ItemsSource = new ObservableCollection<FeatureInfo>(_allFeatures);
+            }
+            else
+            {
+                var filtered = _allFeatures.Where(f =>
+                    (!string.IsNullOrEmpty(f.Id) && f.Id.Contains(text, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(f.Name) && f.Name.Contains(text, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(f.State) && f.State.Contains(text, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(f.Priority) && f.Priority.Contains(text, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(f.Type) && f.Type.Contains(text, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+
+                FeaturesListView.ItemsSource = new ObservableCollection<FeatureInfo>(filtered);
+            }
         }
 
-        private async void SearchDebounceTimer_Tick(object sender, object e)
+        private string Clean(string s)
         {
-            _searchDebounceTimer.Stop();
+            if (string.IsNullOrEmpty(s)) return "";
+            var cleaned = new string(s.Where(c => !char.IsControl(c)).ToArray());
+            return cleaned.Length > 10000 ? cleaned.Substring(0, 10000) : cleaned;
+        }
 
-            string text = SearchBox.Text?.Trim() ?? "";
+        // --- 右键菜单事件处理 ---
 
-            bool isAllDigits = text.All(char.IsDigit);
-
-            if (!isAllDigits || text.Length < 3)
+        // 辅助方法：从菜单点击事件中获取 FeatureInfo 数据
+        private FeatureInfo GetFeatureFromMenu(object sender)
+        {
+            try
             {
-                return;
+                if (sender is MenuFlyoutItem menuItem)
+                {
+                    // 1. 优先使用 CommandParameter
+                    if (menuItem.CommandParameter is FeatureInfo cpFeature)
+                        return cpFeature;
+
+                    // 2. 尝试 MenuFlyoutItem.DataContext（有时会被设置）
+                    if (menuItem.DataContext is FeatureInfo dcFeature)
+                        return dcFeature;
+
+                    // 3. 尝试从父 MenuFlyout 的 Target / PlacementTarget 获取 DataContext（反射兼容不同 WinUI 版本）
+                    if (menuItem.Parent is MenuFlyout parentFlyout)
+                    {
+                        try
+                        {
+                            // 常见属性名：Target 或 PlacementTarget
+                            var targetProp = parentFlyout.GetType().GetProperty("Target")
+                                             ?? parentFlyout.GetType().GetProperty("PlacementTarget");
+
+                            if (targetProp != null)
+                            {
+                                var targetObj = targetProp.GetValue(parentFlyout);
+                                if (targetObj is FrameworkElement fe && fe.DataContext is FeatureInfo feFeature)
+                                    return feFeature;
+                            }
+
+                            // 有些 WinUI 版本把目标放在内部字段或不同属性，尝试查找第一个 FrameworkElement 字段/属性
+                            foreach (var prop in parentFlyout.GetType().GetProperties())
+                            {
+                                try
+                                {
+                                    var val = prop.GetValue(parentFlyout);
+                                    if (val is FrameworkElement fe2 && fe2.DataContext is FeatureInfo f2)
+                                        return f2;
+                                }
+                                catch { }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[GetFeatureFromMenu] reflection error: {ex}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[GetFeatureFromMenu] Exception: {ex}");
             }
 
-            // ⭐ 后台线程过滤（不卡 UI）
-            var filtered = await Task.Run(() =>
-            {
-                return _allFeatures.Where(f =>
-                    (f.Id?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false)
-                ).ToList();
-            });
+            return null;
+        }
 
-            await RenderFeaturesAsync(filtered);
+        private async void EnableFeature_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is MenuFlyoutItem item && item.CommandParameter is FeatureInfo feature)
+                {
+                    await EnableFeatureAsync(feature.Id);
+                    return;
+                }
+
+                // 兜底：尝试从发起者的 DataContext 取值
+                if (sender is FrameworkElement fe && fe.DataContext is FeatureInfo dc)
+                {
+                    await EnableFeatureAsync(dc.Id);
+                    return;
+                }
+
+                System.Diagnostics.Debug.WriteLine("[EnableFeature_Click] feature is null");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[EnableFeature_Click] Exception: {ex}");
+            }
+        }
+
+        private async void DisableFeature_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is MenuFlyoutItem item && item.CommandParameter is FeatureInfo feature)
+                {
+                    await DisableFeatureAsync(feature.Id);
+                    return;
+                }
+
+                if (sender is FrameworkElement fe && fe.DataContext is FeatureInfo dc)
+                {
+                    await DisableFeatureAsync(dc.Id);
+                    return;
+                }
+
+                System.Diagnostics.Debug.WriteLine("[DisableFeature_Click] feature is null");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DisableFeature_Click] Exception: {ex}");
+            }
+        }
+
+        private void CopyFeatureId_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is MenuFlyoutItem item && item.CommandParameter is FeatureInfo feature)
+                {
+                    CopyToClipboard(feature.Id);
+                    return;
+                }
+
+                if (sender is FrameworkElement fe && fe.DataContext is FeatureInfo dc)
+                {
+                    CopyToClipboard(dc.Id);
+                    return;
+                }
+
+                System.Diagnostics.Debug.WriteLine("[CopyFeatureId_Click] feature is null");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CopyFeatureId_Click] Exception: {ex}");
+            }
+        }
+
+        private async Task EnableFeatureAsync(string featureId)
+        {
+            try
+            {
+                LoadingOverlay.Visibility = Visibility.Visible;
+                LoadingText.Text = $"Enabling feature {featureId}...";
+
+                var result = await MainWindow.ExecuteViVeToolCommandAsync($"/enable /id:{featureId}");
+
+                LoadingOverlay.Visibility = Visibility.Collapsed;
+
+                if (result.ExitCode == 0)
+                {
+                    var dialog = new Dialogs.SuccessDialog($"Feature {featureId} enabled successfully!");
+                    dialog.XamlRoot = this.XamlRoot;
+                    await dialog.ShowAsync();
+                }
+                else
+                {
+                    var dialog = new Dialogs.ErrorDialog($"Failed to enable feature:\n{result.Error}");
+                    dialog.XamlRoot = this.XamlRoot;
+                    await dialog.ShowAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                LoadingOverlay.Visibility = Visibility.Collapsed;
+                var dialog = new Dialogs.ErrorDialog(ex.Message);
+                dialog.XamlRoot = this.XamlRoot;
+                await dialog.ShowAsync();
+            }
+        }
+
+        private async Task DisableFeatureAsync(string featureId)
+        {
+            try
+            {
+                LoadingOverlay.Visibility = Visibility.Visible;
+                LoadingText.Text = $"Disabling feature {featureId}...";
+
+                var result = await MainWindow.ExecuteViVeToolCommandAsync($"/disable /id:{featureId}");
+
+                LoadingOverlay.Visibility = Visibility.Collapsed;
+
+                if (result.ExitCode == 0)
+                {
+                    var dialog = new Dialogs.SuccessDialog($"Feature {featureId} disabled successfully!");
+                    dialog.XamlRoot = this.XamlRoot;
+                    await dialog.ShowAsync();
+                }
+                else
+                {
+                    var dialog = new Dialogs.ErrorDialog($"Failed to disable feature:\n{result.Error}");
+                    dialog.XamlRoot = this.XamlRoot;
+                    await dialog.ShowAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                LoadingOverlay.Visibility = Visibility.Collapsed;
+                var dialog = new Dialogs.ErrorDialog(ex.Message);
+                dialog.XamlRoot = this.XamlRoot;
+                await dialog.ShowAsync();
+            }
+        }
+
+        private void CopyToClipboard(string text)
+        {
+            var dataPackage = new DataPackage();
+            dataPackage.SetText(text);
+            Clipboard.SetContent(dataPackage);
         }
 
         private async void ExportButton_Click(object sender, RoutedEventArgs e)
         {
+            // 导出逻辑基本不变，只是数据源现在是 _allFeatures (List)
             try
             {
                 ExportButton.IsEnabled = false;
 
-                // ① 弹出格式选择对话框
-                var optionsDialog = new Dialogs.ExportOptionsDialog();
-                optionsDialog.XamlRoot = this.XamlRoot;
-
-                var result = await optionsDialog.ShowAsync();
-                if (result != ContentDialogResult.Primary)
-                    return;
-
-                bool exportTxt = optionsDialog.ExportTxt;
-                bool exportCsv = optionsDialog.ExportCsv;
-                bool exportJson = optionsDialog.ExportJson;
-
-                if (!exportTxt && !exportCsv && !exportJson)
-                {
-                    var warn = new Dialogs.ErrorDialog("Please select at least one format.");
-                    warn.XamlRoot = this.XamlRoot;
-                    await warn.ShowAsync();
-                    return;
-                }
-
-                // ② 获取文档目录
                 var documentsFolder = await StorageFolder.GetFolderFromPathAsync(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
 
                 string baseFileName = $"ViVeTool_Query_{DateTime.Now:yyyyMMdd_HHmmss}";
 
-                // ③ 后台线程生成内容（避免卡顿）
-                var (txtContent, csvContent, jsonContent) = await Task.Run(() =>
+                var txtFile = await documentsFolder.CreateFileAsync(
+                    $"{baseFileName}.txt",
+                    CreationCollisionOption.GenerateUniqueName);
+
+                // 使用 StringBuilder 优化大字符串拼接
+                var sbTxt = new System.Text.StringBuilder();
+                foreach (var f in _allFeatures)
                 {
-                    var txt = new System.Text.StringBuilder();
-                    var csv = new System.Text.StringBuilder();
-                    var json = new System.Text.StringBuilder();
-
-                    csv.AppendLine("ID,Priority,State,Type,Name");
-                    json.AppendLine("[");
-
-                    foreach (var f in _allFeatures)
-                    {
-                        // TXT
-                        txt.AppendLine($"[{f.Id}] {f.Name}");
-                        txt.AppendLine($"  Priority: {f.Priority}");
-                        txt.AppendLine($"  State: {f.State}");
-                        txt.AppendLine($"  Type: {f.Type}");
-                        txt.AppendLine();
-
-                        // CSV
-                        csv.AppendLine($"{f.Id},{f.Priority},{f.State},{f.Type},{f.Name}");
-
-                        // JSON
-                        json.AppendLine(
-                            $"  {{ \"Id\": \"{f.Id}\", \"Priority\": \"{f.Priority}\", \"State\": \"{f.State}\", \"Type\": \"{f.Type}\", \"Name\": \"{f.Name}\" }},"
-                        );
-                    }
-
-                    json.AppendLine("]");
-
-                    return (txt.ToString(), csv.ToString(), json.ToString());
-                });
-
-                // ④ 写入文件
-                StorageFile? txtFile = null;
-                StorageFile? csvFile = null;
-                StorageFile? jsonFile = null;
-
-                if (exportTxt)
-                {
-                    txtFile = await documentsFolder.CreateFileAsync($"{baseFileName}.txt",
-                        CreationCollisionOption.GenerateUniqueName);
-                    await FileIO.WriteTextAsync(txtFile, txtContent);
+                    sbTxt.AppendLine($"[{f.Id}] {f.Name}");
+                    sbTxt.AppendLine($"  Priority: {f.Priority}");
+                    sbTxt.AppendLine($"  State: {f.State}");
+                    sbTxt.AppendLine($"  Type: {f.Type}");
+                    sbTxt.AppendLine();
                 }
+                await FileIO.WriteTextAsync(txtFile, sbTxt.ToString());
 
-                if (exportCsv)
+                var csvFile = await documentsFolder.CreateFileAsync(
+                    $"{baseFileName}.csv",
+                    CreationCollisionOption.GenerateUniqueName);
+
+                var sbCsv = new System.Text.StringBuilder();
+                sbCsv.AppendLine("ID,Priority,State,Type,Name");
+                foreach (var f in _allFeatures)
                 {
-                    csvFile = await documentsFolder.CreateFileAsync($"{baseFileName}.csv",
-                        CreationCollisionOption.GenerateUniqueName);
-                    await FileIO.WriteTextAsync(csvFile, csvContent);
+                    sbCsv.AppendLine($"{f.Id},{f.Priority},{f.State},{f.Type},\"{f.Name}\"");
                 }
+                await FileIO.WriteTextAsync(csvFile, sbCsv.ToString());
 
-                if (exportJson)
-                {
-                    jsonFile = await documentsFolder.CreateFileAsync($"{baseFileName}.json",
-                        CreationCollisionOption.GenerateUniqueName);
-                    await FileIO.WriteTextAsync(jsonFile, jsonContent);
-                }
-
-                // ⑤ 生成成功信息
-                var msg = "Exported successfully!\n\n";
-
-                if (txtFile != null) msg += $"TXT: {txtFile.Name}\n";
-                if (csvFile != null) msg += $"CSV: {csvFile.Name}\n";
-                if (jsonFile != null) msg += $"JSON: {jsonFile.Name}\n";
-
-                msg += "\nLocation:";
-
-                // ⑥ 使用你最新版本的 SuccessDialog（带可点击路径）
-                var dialog = new Dialogs.SuccessDialog(msg, documentsFolder.Path);
+                var dialog = new Dialogs.SuccessDialog(
+                    $"Exported successfully!\n\nTXT: {txtFile.Name}\nCSV: {csvFile.Name}",
+                    documentsFolder.Path);
                 dialog.XamlRoot = this.XamlRoot;
                 await dialog.ShowAsync();
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[ExportButton] Exception: {ex}");
                 var dialog = new Dialogs.ErrorDialog($"Export failed: {ex.Message}");
                 dialog.XamlRoot = this.XamlRoot;
                 await dialog.ShowAsync();
@@ -410,46 +559,6 @@ namespace ViVeToolGUI
             finally
             {
                 ExportButton.IsEnabled = true;
-            }
-        }
-
-        private async Task ExportToFileAsync(StorageFile file)
-        {
-            try
-            {
-                string content;
-
-                if (file.FileType == ".csv")
-                {
-                    content = "ID,Priority,State,Type,Name\n";
-                    foreach (var f in _allFeatures)
-                    {
-                        content += $"{f.Id},{f.Priority},{f.State},{f.Type},{f.Name}\n";
-                    }
-                }
-                else
-                {
-                    content = "";
-                    foreach (var f in _allFeatures)
-                    {
-                        content += $"[{f.Id}] {f.Name}\n";
-                        content += $"  Priority: {f.Priority}\n";
-                        content += $"  State: {f.State}\n";
-                        content += $"  Type: {f.Type}\n\n";
-                    }
-                }
-
-                await FileIO.WriteTextAsync(file, content);
-
-                var dialog = new Dialogs.SuccessDialog(_resourceLoader.GetString("Export_Success"));
-                dialog.XamlRoot = this.XamlRoot;
-                await dialog.ShowAsync();
-            }
-            catch (Exception ex)
-            {
-                var dialog = new Dialogs.ErrorDialog(ex.Message);
-                dialog.XamlRoot = this.XamlRoot;
-                await dialog.ShowAsync();
             }
         }
     }
