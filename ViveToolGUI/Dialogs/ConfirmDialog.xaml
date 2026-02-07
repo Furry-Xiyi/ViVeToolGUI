@@ -5,7 +5,7 @@
     x:Uid="Dialog_Confirm"
     PrimaryButtonText=""
     CloseButtonText=""
-    DefaultButton="Primary"
+    DefaultButton="Close"
     Style="{StaticResource DefaultContentDialogStyle}">
 
     <StackPanel Spacing="16">

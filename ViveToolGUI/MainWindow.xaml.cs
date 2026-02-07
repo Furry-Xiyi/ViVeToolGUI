@@ -1,57 +1,223 @@
-using Microsoft.UI;
-using Microsoft.UI.Composition.SystemBackdrops;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Hosting;
-using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Navigation;
+using Microsoft.Windows.ApplicationModel.Resources;
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ViVeToolGUI.Dialogs;
+using ViVeToolGUI.Pages;
+using Windows.ApplicationModel;
 using Windows.Storage;
-using Windows.UI;
-using WinRT.Interop;
+using Windows.System;
 
 namespace ViVeToolGUI
 {
     public sealed partial class MainWindow : Window
     {
-        public AppWindow AppWindow { get; private set; }
-        private IntPtr _hwnd;
-        private IntPtr _oldWndProc;
-        private WndProcDelegate _newWndProc;
+        private ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+        private static SUBCLASSPROC _subclassProc;
+        public static MainWindow Instance { get; private set; }
+        public ObservableCollection<string> BreadcrumbItems { get; } = new ObservableCollection<string>();
+        private readonly ResourceLoader _loader = new ResourceLoader();
         public static SemaphoreSlim _commandLock = new(1, 1);
+
+        public async void OpenExternalLink(object sender, RoutedEventArgs e)
+        {
+            var root = (ContentFrame.Content as FrameworkElement)?.XamlRoot;
+            if (root == null)
+                return;
+
+            string url = "";
+
+            if (sender is Button btn && btn.Tag is string buttonUrl)
+                url = buttonUrl;
+            else if (sender is HyperlinkButton link && link.Tag is string linkUrl)
+                url = linkUrl;
+
+            if (string.IsNullOrWhiteSpace(url))
+                return;
+
+            var dialog = new ExternalOpenDialog { XamlRoot = root };
+            var result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+                await Launcher.LaunchUriAsync(new Uri(url));
+        }
 
         public MainWindow()
         {
             this.InitializeComponent();
-            InitializeAppWindow();
-            HookMinWindowSize();
+            Instance = this;
 
-            Activated += MainWindow_Activated;
-            Closed += MainWindow_Closed;
+            if (Content is FrameworkElement root)
+                root.RequestedTheme = AppThemeManager.CurrentTheme;
 
-            ContentFrame.Navigate(typeof(EnableDisablePage));
+            this.SetTitleBar(TitleBarArea);
+
+            ContentFrame.Navigated += ContentFrame_Navigated;
+
+            this.Activated += MainWindow_Activated;
+            this.Closed += MainWindow_Closed;
+
+            if (Content is FrameworkElement rootEl)
+                rootEl.Loaded += Root_Loaded;
+
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            SetMinWindowSize(hwnd, minWidth: 800, minHeight: 520);
+        }
+
+        public void StartLoadingContent()
+        {
             NavView.SelectedItem = NavView.MenuItems[0];
+            NavigateByTag("enableDisable");
+        }
+
+        public void ShowLoadingOverlay(string text = null)
+        {
+            if (CommonLoadingText != null)
+                CommonLoadingText.Text = text ?? "";
+
+            CommonLoadingOverlay.Visibility = Visibility.Visible;
+        }
+
+        public void HideLoadingOverlay()
+        {
+            CommonLoadingOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private static Type TagToPageType(string tag)
+        {
+            return tag switch
+            {
+                "enableDisable" => typeof(EnableDisablePage),
+                "query" => typeof(QueryPage),
+                "reset" => typeof(ResetPage),
+                _ => null
+            };
+        }
+
+        private void NavigateByTag(string tag)
+        {
+            var pageType = TagToPageType(tag);
+            if (pageType != null && ContentFrame.CurrentSourcePageType != pageType)
+                ContentFrame.Navigate(pageType);
+        }
+
+        private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        {
+            if (args.IsSettingsInvoked)
+            {
+                if (ContentFrame.CurrentSourcePageType != typeof(SettingsPage))
+                    ContentFrame.Navigate(typeof(SettingsPage));
+
+                return;
+            }
+
+            string tag = args.InvokedItemContainer?.Tag?.ToString();
+            NavigateByTag(tag);
+        }
+
+        private void NavView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+        {
+            if (ContentFrame.CanGoBack)
+                ContentFrame.GoBack();
+        }
+
+        private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
+        {
+            UpdateBackButton();
+            UpdateSelectedNavItem(e.SourcePageType);
+            UpdateBreadcrumb(e.SourcePageType);
+        }
+
+        private void UpdateBackButton() =>
+            NavView.IsBackEnabled = ContentFrame.CanGoBack;
+
+        private void UpdateSelectedNavItem(Type pageType)
+        {
+            if (pageType == typeof(SettingsPage))
+            {
+                NavView.SelectedItem = NavView.SettingsItem;
+                return;
+            }
+
+            foreach (var item in NavView.MenuItems.OfType<NavigationViewItem>())
+            {
+                string tag = item.Tag?.ToString();
+                if (TagToPageType(tag) == pageType)
+                {
+                    NavView.SelectedItem = item;
+                    return;
+                }
+            }
+        }
+
+        private void UpdateBreadcrumb(Type pageType)
+        {
+            BreadcrumbItems.Clear();
+
+            if (pageType == typeof(EnableDisablePage))
+                BreadcrumbItems.Add(_loader.GetString("EnableDisable_Breadcrumb"));
+            else if (pageType == typeof(QueryPage))
+                BreadcrumbItems.Add(_loader.GetString("Query_Breadcrumb"));
+            else if (pageType == typeof(ResetPage))
+                BreadcrumbItems.Add(_loader.GetString("Reset_Breadcrumb"));
+            else if (pageType == typeof(SettingsPage))
+                BreadcrumbItems.Add(_loader.GetString("Settings_Breadcrumb"));
+
+            BreadcrumbPanel.Visibility = BreadcrumbItems.Count > 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            bool isActive = args.WindowActivationState != WindowActivationState.Deactivated;
+            TitleBarAppName.Opacity = isActive ? 1.0 : 0.5;
+        }
+
+        public async Task FinishLoadingAndHideSplashAsync()
+        {
+            await Task.Delay(500);
+
+            SplashFadeOut.Completed += (s, e) =>
+            {
+                SplashOverlay.Visibility = Visibility.Collapsed;
+
+                bool sound = localSettings.Values["EnableSound"] is bool b ? b : true;
+                ElementSoundPlayer.State = sound
+                    ? ElementSoundPlayerState.On
+                    : ElementSoundPlayerState.Off;
+            };
+
+            SplashFadeOut.Begin();
         }
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
         {
-            // 清理临时文件
             try
             {
                 string tempDir = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                    "ViVeToolGUI", "Temp");
+                    "ViVeToolGUI",
+                    "Temp");
 
                 if (Directory.Exists(tempDir))
                 {
-                    var files = Directory.GetFiles(tempDir, "vivetool_*.txt");
-                    foreach (var file in files)
+                    foreach (var file in Directory.GetFiles(tempDir, "vivetool_*.txt"))
+                    {
+                        try { File.Delete(file); } catch { }
+                    }
+
+                    foreach (var file in Directory.GetFiles(tempDir, "vivetool_*.bat"))
                     {
                         try { File.Delete(file); } catch { }
                     }
@@ -60,16 +226,22 @@ namespace ViVeToolGUI
             catch { }
         }
 
-        /// <summary>
-        /// 执行管理员 ViVeTool 命令 - 所有页面通用方法
-        /// </summary>
         public static async Task<CommandResult> ExecuteViVeToolCommandAsync(string arguments)
         {
             await _commandLock.WaitAsync();
 
             try
             {
-                // 验证 ViVeTool 路径
+                if (!await App.EnsureViVeToolInitializedAsync())
+                {
+                    return new CommandResult
+                    {
+                        ExitCode = -1,
+                        Output = "",
+                        Error = "ViVeTool initialization failed."
+                    };
+                }
+
                 if (string.IsNullOrEmpty(App.ViVeToolPath) || !File.Exists(App.ViVeToolPath))
                 {
                     Debug.WriteLine($"[ExecuteViVeTool] ERROR: ViVeTool.exe not found at: {App.ViVeToolPath}");
@@ -81,93 +253,85 @@ namespace ViVeToolGUI
                     };
                 }
 
-                // 验证依赖文件
                 string vivetoolDir = Path.GetDirectoryName(App.ViVeToolPath);
                 string viveDll = Path.Combine(vivetoolDir, "vive.dll");
+
                 if (!File.Exists(viveDll))
-                {
                     Debug.WriteLine($"[ExecuteViVeTool] WARNING: vive.dll not found at: {viveDll}");
-                }
 
                 Debug.WriteLine($"[ExecuteViVeTool] ViVeToolPath: {App.ViVeToolPath}");
                 Debug.WriteLine($"[ExecuteViVeTool] Arguments: {arguments}");
 
-                // 将输出文件也放在 ProgramData 目录（管理员进程有权限）
                 string tempDir = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                    "ViVeToolGUI", "Temp");
+                    "ViVeToolGUI",
+                    "Temp");
+
                 Directory.CreateDirectory(tempDir);
 
                 string outputFile = Path.Combine(tempDir, $"vivetool_{Guid.NewGuid():N}.txt");
-                Debug.WriteLine($"[ExecuteViVeTool] Output file: {outputFile}");
-
-                // 创建批处理脚本来执行命令（更可靠）
                 string batchFile = Path.Combine(tempDir, $"vivetool_{Guid.NewGuid():N}.bat");
+
                 string batchContent = $@"@echo off
 cd /d ""{vivetoolDir}""
 ""{App.ViVeToolPath}"" {arguments} > ""{outputFile}"" 2>&1
 echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
 ";
+
                 await File.WriteAllTextAsync(batchFile, batchContent, Encoding.UTF8);
-                Debug.WriteLine($"[ExecuteViVeTool] Batch file created: {batchFile}");
-                Debug.WriteLine($"[ExecuteViVeTool] Batch content:\n{batchContent}");
 
                 var psi = new ProcessStartInfo
                 {
                     FileName = batchFile,
-                    Verb = "runas", // 请求管理员权限
+                    Verb = "runas",
                     UseShellExecute = true,
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     WorkingDirectory = vivetoolDir
                 };
 
-                Debug.WriteLine($"[ExecuteViVeTool] Starting batch file with runas...");
-
                 int exitCode = 0;
 
                 try
                 {
                     using var proc = Process.Start(psi);
+
                     if (proc == null)
                     {
-                        Debug.WriteLine("[ExecuteViVeTool] ERROR: Process.Start returned null");
                         try { File.Delete(batchFile); } catch { }
+
                         return new CommandResult
                         {
                             ExitCode = -1,
                             Output = "",
-                            Error = "Failed to start elevated process"
+                            Error = "Failed to start elevated process."
                         };
                     }
-
-                    Debug.WriteLine($"[ExecuteViVeTool] Process started with ID: {proc.Id}");
 
                     await Task.Run(() =>
                     {
                         proc.WaitForExit();
                         exitCode = proc.ExitCode;
-                        Debug.WriteLine($"[ExecuteViVeTool] Process exited with code: {exitCode}");
                     });
                 }
                 catch (System.ComponentModel.Win32Exception ex)
                 {
                     Debug.WriteLine($"[ExecuteViVeTool] User cancelled UAC: {ex.Message}");
+
                     try { File.Delete(batchFile); } catch { }
+
                     return new CommandResult
                     {
                         ExitCode = -1,
                         Output = "",
-                        Error = "User cancelled UAC elevation"
+                        Error = "User cancelled UAC elevation."
                     };
                 }
 
-                // 等待文件写入完成
                 await Task.Delay(1000);
 
                 string output = "";
 
-                // 读取输出文件（最多重试5次）
                 for (int i = 0; i < 5; i++)
                 {
                     try
@@ -175,63 +339,36 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
                         if (File.Exists(outputFile))
                         {
                             output = await File.ReadAllTextAsync(outputFile, Encoding.UTF8);
-                            Debug.WriteLine($"[ExecuteViVeTool] Output file read successfully. Length: {output.Length}");
 
                             if (output.Length > 0)
                             {
-                                Debug.WriteLine($"[ExecuteViVeTool] Output preview (first 1000 chars):");
-                                Debug.WriteLine(output.Substring(0, Math.Min(1000, output.Length)));
-
-                                // 提取实际退出代码
-                                var exitCodeMatch = System.Text.RegularExpressions.Regex.Match(output, @"EXIT_CODE=(\d+)");
+                                var exitCodeMatch = System.Text.RegularExpressions.Regex.Match(output, @"EXIT_CODE=(-?\d+)");
                                 if (exitCodeMatch.Success)
                                 {
                                     exitCode = int.Parse(exitCodeMatch.Groups[1].Value);
-                                    // 移除退出代码行
                                     output = output.Replace(exitCodeMatch.Value, "").Trim();
-                                    Debug.WriteLine($"[ExecuteViVeTool] Actual exit code from batch: {exitCode}");
                                 }
                             }
 
                             try { File.Delete(outputFile); } catch { }
                             break;
                         }
-                        else
-                        {
-                            Debug.WriteLine($"[ExecuteViVeTool] Output file not found (attempt {i + 1}/5)");
-                            await Task.Delay(500);
-                        }
+
+                        await Task.Delay(500);
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Debug.WriteLine($"[ExecuteViVeTool] Error reading output file (attempt {i + 1}/5): {ex.Message}");
                         await Task.Delay(500);
                     }
                 }
 
-                // 清理批处理文件
                 try { File.Delete(batchFile); } catch { }
-
-                if (string.IsNullOrEmpty(output))
-                {
-                    Debug.WriteLine("[ExecuteViVeTool] WARNING: Output is empty!");
-
-                    // 尝试手动检查文件是否存在
-                    if (File.Exists(outputFile))
-                    {
-                        Debug.WriteLine($"[ExecuteViVeTool] Output file exists but couldn't read. Size: {new FileInfo(outputFile).Length}");
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"[ExecuteViVeTool] Output file was never created");
-                    }
-                }
 
                 return new CommandResult
                 {
                     ExitCode = exitCode,
                     Output = output,
-                    Error = exitCode == 0 ? "" : $"ViVeTool exited with code {exitCode}"
+                    Error = exitCode == 0 ? "" : $"ViVeTool exited with code {exitCode}."
                 };
             }
             finally
@@ -240,206 +377,88 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
             }
         }
 
-        private void InitializeAppWindow()
+        static int _minW, _minH;
+
+        static void SetMinWindowSize(IntPtr hwnd, int minWidth, int minHeight)
         {
-            _hwnd = WindowNative.GetWindowHandle(this);
-            var windowId = Win32Interop.GetWindowIdFromWindow(_hwnd);
-            AppWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+            _minW = minWidth;
+            _minH = minHeight;
+            _subclassProc = SubclassProc;
+            SetWindowSubclass(hwnd, _subclassProc, 0, 0);
+        }
 
-            if (AppWindowTitleBar.IsCustomizationSupported())
+        static nuint SubclassProc(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam,
+                                   nuint uIdSubclass, nuint dwRefData)
+        {
+            if (uMsg == 0x0024)
             {
-                var titleBar = AppWindow.TitleBar;
-                titleBar.ExtendsContentIntoTitleBar = true;
-                titleBar.ButtonBackgroundColor = Colors.Transparent;
-                titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-
-                SetTitleBar(AppTitleBar);
+                double dpi = GetDpiForWindow(hWnd) / 96.0;
+                var info = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+                info.ptMinTrackSize.x = (int)(_minW * dpi);
+                info.ptMinTrackSize.y = (int)(_minH * dpi);
+                Marshal.StructureToPtr(info, lParam, true);
             }
 
-            AppWindow.Resize(new Windows.Graphics.SizeInt32(1200, 800));
+            return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+        }
 
-            var loader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
-            AppWindow.Title = loader.GetString("AppDisplayName");
+        delegate nuint SUBCLASSPROC(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam,
+                                     nuint uIdSubclass, nuint dwRefData);
 
+        [DllImport("comctl32.dll")]
+        static extern bool SetWindowSubclass(IntPtr hWnd, SUBCLASSPROC pfnSubclass,
+                                              nuint uIdSubclass, nuint dwRefData);
+
+        [DllImport("comctl32.dll")]
+        static extern nuint DefSubclassProc(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam);
+
+        [DllImport("user32.dll")]
+        static extern uint GetDpiForWindow(IntPtr hWnd);
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct MINMAXINFO
+        {
+            public POINT ptReserved, ptMaxSize, ptMaxPosition, ptMinTrackSize, ptMaxTrackSize;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct POINT
+        {
+            public int x, y;
+        }
+
+        private void Root_Loaded(object sender, RoutedEventArgs e)
+        {
+            TitleBarAppName.Text = Package.Current.DisplayName;
+            ImgAppIcon.Source = new BitmapImage(Package.Current.Logo);
+
+            ApplySettings();
+            UpdateBackButton();
+
+            if (Content is FrameworkElement root)
+            {
+                root.ActualThemeChanged -= AppThemeManager.OnActualThemeChanged;
+                root.ActualThemeChanged += AppThemeManager.OnActualThemeChanged;
+            }
+        }
+
+        public void ApplySettings()
+        {
             try
             {
-                AppWindow.SetIcon("Assets/AppIcon.ico");
+                string position = localSettings.Values["PanePosition"] as string ?? "Left";
+
+                if (localSettings.Values["PanePosition"] == null)
+                    localSettings.Values["PanePosition"] = "Left";
+
+                NavView.PaneDisplayMode = position == "Top"
+                    ? NavigationViewPaneDisplayMode.Top
+                    : NavigationViewPaneDisplayMode.LeftCompact;
             }
-            catch { }
-        }
-
-        private void HookMinWindowSize()
-        {
-            _newWndProc = CustomWndProc;
-            _oldWndProc = SetWindowLongPtr(_hwnd, -4, Marshal.GetFunctionPointerForDelegate(_newWndProc));
-        }
-
-        private IntPtr CustomWndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
-        {
-            const int WM_GETMINMAXINFO = 0x0024;
-
-            if (msg == WM_GETMINMAXINFO)
+            catch (Exception ex)
             {
-                var mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
-                mmi.ptMinTrackSize.x = 800;
-                mmi.ptMinTrackSize.y = 600;
-                Marshal.StructureToPtr(mmi, lParam, false);
-                return IntPtr.Zero;
+                Debug.WriteLine($"ApplySettings Error: {ex.Message}");
             }
-
-            return CallWindowProc(_oldWndProc, hWnd, msg, wParam, lParam);
-        }
-
-        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
-        {
-            bool isActive = args.WindowActivationState != WindowActivationState.Deactivated;
-            AppTitle.Opacity = isActive ? 1.0 : 0.6;
-
-            var localSettings = ApplicationData.Current.LocalSettings;
-            string themeSetting = localSettings.Values["AppTheme"]?.ToString() ?? "System";
-
-            ElementTheme theme = themeSetting switch
-            {
-                "Light" => ElementTheme.Light,
-                "Dark" => ElementTheme.Dark,
-                _ => GetSystemTheme()
-            };
-
-            bool followSystem = themeSetting == "System";
-            UpdateTitleBarColors(theme, followSystem, isActive);
-        }
-
-        private ElementTheme GetSystemTheme()
-        {
-            return Application.Current.RequestedTheme == ApplicationTheme.Dark
-                ? ElementTheme.Dark
-                : ElementTheme.Light;
-        }
-
-        public void UpdateTitleBarColors(ElementTheme theme, bool followSystem, bool isActive)
-        {
-            if (!AppWindowTitleBar.IsCustomizationSupported())
-                return;
-
-            var titleBar = AppWindow.TitleBar;
-
-            if (followSystem)
-            {
-                theme = GetSystemTheme();
-            }
-
-            if (theme == ElementTheme.Dark)
-            {
-                titleBar.ButtonForegroundColor = isActive ? Colors.White : Color.FromArgb(0x99, 0xFF, 0xFF, 0xFF);
-                titleBar.ButtonHoverForegroundColor = Colors.White;
-                titleBar.ButtonPressedForegroundColor = Colors.White;
-                titleBar.ButtonBackgroundColor = Colors.Transparent;
-                titleBar.ButtonHoverBackgroundColor = Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF);
-                titleBar.ButtonPressedBackgroundColor = Color.FromArgb(0x50, 0xFF, 0xFF, 0xFF);
-            }
-            else
-            {
-                titleBar.ButtonForegroundColor = isActive ? Colors.Black : Color.FromArgb(0x99, 0x00, 0x00, 0x00);
-                titleBar.ButtonHoverForegroundColor = Colors.Black;
-                titleBar.ButtonPressedForegroundColor = Colors.Black;
-                titleBar.ButtonBackgroundColor = Colors.Transparent;
-                titleBar.ButtonHoverBackgroundColor = Color.FromArgb(0x30, 0x00, 0x00, 0x00);
-                titleBar.ButtonPressedBackgroundColor = Color.FromArgb(0x50, 0x00, 0x00, 0x00);
-            }
-        }
-
-        public void ApplyMaterial(string material)
-        {
-            SystemBackdrop = material switch
-            {
-                "Acrylic" => new DesktopAcrylicBackdrop(),
-                "Mica" => new MicaBackdrop { Kind = MicaKind.Base },
-                _ => new MicaBackdrop { Kind = MicaKind.BaseAlt }
-            };
-
-            var localSettings = ApplicationData.Current.LocalSettings;
-            localSettings.Values["AppMaterial"] = material;
-        }
-
-        public void ShowSplashOverlay()
-        {
-            SplashOverlay.Visibility = Visibility.Visible;
-        }
-
-        public async void HideSplashOverlay()
-        {
-            var visual = ElementCompositionPreview.GetElementVisual(SplashOverlay);
-            var compositor = visual.Compositor;
-
-            var fade = compositor.CreateScalarKeyFrameAnimation();
-            fade.InsertKeyFrame(1f, 0f);
-            fade.Duration = TimeSpan.FromMilliseconds(250);
-
-            visual.StartAnimation("Opacity", fade);
-
-            await Task.Delay(250);
-            SplashOverlay.Visibility = Visibility.Collapsed;
-        }
-
-        public void BringToFront()
-        {
-            if (AppWindow != null && AppWindow.Presenter is OverlappedPresenter presenter)
-            {
-                presenter.Restore();
-                AppWindow.Show();
-            }
-        }
-
-        private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-            if (args.IsSettingsSelected)
-            {
-                ContentFrame.Navigate(typeof(SettingsPage));
-            }
-            else
-            {
-                var selectedItem = args.SelectedItem as NavigationViewItem;
-                if (selectedItem != null)
-                {
-                    string tag = selectedItem.Tag?.ToString();
-                    switch (tag)
-                    {
-                        case "EnableDisable":
-                            ContentFrame.Navigate(typeof(EnableDisablePage));
-                            break;
-                        case "Query":
-                            ContentFrame.Navigate(typeof(QueryPage));
-                            break;
-                        case "Subfeatures":
-                            ContentFrame.Navigate(typeof(SubfeaturesPage));
-                            break;
-                        case "Reset":
-                            ContentFrame.Navigate(typeof(ResetPage));
-                            break;
-                    }
-                }
-            }
-        }
-
-        private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr newProc);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct POINT { public int x; public int y; }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct MINMAXINFO
-        {
-            public POINT ptReserved;
-            public POINT ptMaxSize;
-            public POINT ptMaxPosition;
-            public POINT ptMinTrackSize;
-            public POINT ptMaxTrackSize;
         }
     }
 

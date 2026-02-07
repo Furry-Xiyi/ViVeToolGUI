@@ -1,19 +1,26 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.UI;
+using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.AppLifecycle;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Resources;
 using Windows.Storage;
+using Windows.UI;
 
 namespace ViVeToolGUI
 {
     public partial class App : Application
     {
         public static Window MainWindow { get; private set; }
-        public static MainWindow MainWindowInstance { get; private set; }
+        public static MainWindow MainWindowInstance => MainWindow as MainWindow;
         public static string ViVeToolPath { get; private set; }
+
         private static bool _vivetoolInitialized = false;
 
         public App()
@@ -21,59 +28,70 @@ namespace ViVeToolGUI
             this.InitializeComponent();
         }
 
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            // 单实例检查
-            var mainInstance = AppInstance.FindOrRegisterForKey("ViVeToolGUI_MAIN");
-            var activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+            var mainInstance = AppInstance.FindOrRegisterForKey("main-instance");
 
             if (!mainInstance.IsCurrent)
             {
-                mainInstance.RedirectActivationToAsync(activationArgs).AsTask().Wait();
+                mainInstance.RedirectActivationToAsync(
+                    AppInstance.GetCurrent().GetActivatedEventArgs()
+                ).GetAwaiter().GetResult();
+
                 Environment.Exit(0);
                 return;
             }
 
-            mainInstance.Activated += OnActivated;
+            mainInstance.Activated += (_, _) =>
+            {
+                MainWindow?.DispatcherQueue.TryEnqueue(() =>
+                {
+                    var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(MainWindow);
+                    BringWindowToFront(hwnd);
+                });
+            };
+
+            AppThemeManager.LoadSettings();
+
+            MainWindow = new MainWindow();
+
+            AppThemeManager.SetupTitleBar();
+
+            MainWindow.Activate();
+
+            _ = InitializeAppAfterSplashAsync();
+        }
+
+        private async Task InitializeAppAfterSplashAsync()
+        {
+            await Task.Delay(50);
 
             _ = InitializeViVeToolAsync();
 
-            // 创建窗口
-            var win = new MainWindow();
-            MainWindowInstance = win;
-            MainWindow = win;
+            var mw = (MainWindow)MainWindow;
 
-            // 应用主题
-            ApplyGlobalTheme();
-
-            // 应用材质
-            win.ApplyMaterial(GetSavedMaterial());
-
-
-            win.ShowSplashOverlay();
-
-            // 激活窗口
-            win.Activate();
-            _ = InitializeAppAsync();
-        }
-
-        private void OnActivated(object sender, AppActivationArguments e)
-        {
-            MainWindowInstance?.DispatcherQueue.TryEnqueue(() =>
+            mw.DispatcherQueue.TryEnqueue(() =>
             {
-                MainWindowInstance.BringToFront();
+                try { mw.AppWindow.SetIcon("Assets/AppIcon.ico"); } catch { }
+
+                AppThemeManager.ApplyMaterial();
+
+                var loader = new ResourceLoader();
+                mw.AppWindow.Title = loader.GetString("AppDisplayName");
+
+                mw.StartLoadingContent();
+            });
+
+            mw.DispatcherQueue.TryEnqueue(async () =>
+            {
+                await mw.FinishLoadingAndHideSplashAsync();
             });
         }
 
-         private async Task InitializeAppAsync()
-         {
-             await Task.Delay(1500);
-             MainWindowInstance?.HideSplashOverlay();
-         }
-
         private async Task InitializeViVeToolAsync()
         {
-            if (_vivetoolInitialized) return;
+            if (_vivetoolInitialized)
+                return;
 
             try
             {
@@ -86,102 +104,220 @@ namespace ViVeToolGUI
 
                 string arch = RuntimeInformation.ProcessArchitecture switch
                 {
-                    Architecture.X64 => "x64",
                     Architecture.Arm64 => "arm64",
                     _ => "x64"
                 };
 
                 string targetExe = Path.Combine(vivetoolDir, "ViVeTool.exe");
 
-                // 检查是否需要复制
-                if (!File.Exists(targetExe))
-                {
-                    Debug.WriteLine($"[InitViVeTool] Copying files from Assets/{arch}...");
+                Debug.WriteLine($"[InitViVeTool] Copying files from Assets/{arch}...");
 
-                    var installFolder = Windows.ApplicationModel.Package.Current.InstalledLocation;
-                    var assetsFolder = await installFolder.GetFolderAsync("Assets");
-                    var archFolder = await assetsFolder.GetFolderAsync(arch);
-                    var files = await archFolder.GetFilesAsync();
-                    var targetFolder = await StorageFolder.GetFolderFromPathAsync(vivetoolDir);
+                var installFolder = Windows.ApplicationModel.Package.Current.InstalledLocation;
+                var assetsFolder = await installFolder.GetFolderAsync("Assets");
+                var archFolder = await assetsFolder.GetFolderAsync(arch);
+                var files = await archFolder.GetFilesAsync();
+                var targetFolder = await StorageFolder.GetFolderFromPathAsync(vivetoolDir);
 
-                    foreach (var file in files)
-                    {
-                        await file.CopyAsync(targetFolder, file.Name, NameCollisionOption.ReplaceExisting);
-                    }
-                }
+                foreach (var file in files)
+                    await file.CopyAsync(targetFolder, file.Name, NameCollisionOption.ReplaceExisting);
 
                 ViVeToolPath = targetExe;
-                _vivetoolInitialized = true;
+                _vivetoolInitialized = File.Exists(targetExe);
 
-                Debug.WriteLine($"[InitViVeTool] SUCCESS! Path: {ViVeToolPath}");
+                Debug.WriteLine($"[InitViVeTool] Path: {ViVeToolPath}");
+                Debug.WriteLine($"[InitViVeTool] Initialized: {_vivetoolInitialized}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[InitViVeTool] ERROR: {ex.Message}");
+                Debug.WriteLine($"[InitViVeTool] ERROR: {ex}");
             }
         }
 
-        // 🔥 添加等待初始化完成的方法
         public static async Task<bool> EnsureViVeToolInitializedAsync()
         {
-            if (_vivetoolInitialized) return true;
+            if (_vivetoolInitialized)
+                return true;
 
-            // 最多等待5秒
             for (int i = 0; i < 50; i++)
             {
-                if (_vivetoolInitialized) return true;
+                if (_vivetoolInitialized)
+                    return true;
+
                 await Task.Delay(100);
             }
 
             return _vivetoolInitialized;
         }
 
-        public static void ApplyGlobalTheme()
+        [DllImport("user32.dll")] static extern bool IsIconic(IntPtr hWnd);
+        [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        static void BringWindowToFront(IntPtr hwnd)
         {
-            string themeSetting = GetSavedTheme();
-
-            ElementTheme theme = themeSetting switch
-            {
-                "Light" => ElementTheme.Light,
-                "Dark" => ElementTheme.Dark,
-                _ => ElementTheme.Default
-            };
-
-            if (MainWindowInstance?.Content is FrameworkElement root)
-            {
-                root.RequestedTheme = theme;
-
-                bool followSystem = themeSetting == "System";
-                bool isActive = true;
-
-                MainWindowInstance.UpdateTitleBarColors(theme, followSystem, isActive);
-            }
+            if (IsIconic(hwnd)) ShowWindow(hwnd, 9);
+            SetForegroundWindow(hwnd);
         }
+    }
 
-        private static string GetSavedTheme()
+    public static class AppThemeManager
+    {
+        public static ElementTheme CurrentTheme = ElementTheme.Default;
+        public static BackgroundMaterial CurrentMaterial = BackgroundMaterial.Mica;
+
+        public static void LoadSettings()
         {
+            var s = ApplicationData.Current.LocalSettings;
+
             try
             {
-                var localSettings = ApplicationData.Current.LocalSettings;
-                return localSettings.Values["AppTheme"]?.ToString() ?? "System";
+                string theme = s.Values["AppTheme"] as string ?? "System";
+                CurrentTheme = theme switch
+                {
+                    "Light" => ElementTheme.Light,
+                    "Dark" => ElementTheme.Dark,
+                    _ => ElementTheme.Default
+                };
+            }
+            catch { CurrentTheme = ElementTheme.Default; }
+
+            try
+            {
+                string material = s.Values["AppMaterial"] as string ?? "MicaAlt";
+                CurrentMaterial = material switch
+                {
+                    "MicaAlt" => BackgroundMaterial.MicaAlt,
+                    "Acrylic" => BackgroundMaterial.Acrylic,
+                    _ => BackgroundMaterial.Mica
+                };
+            }
+            catch { CurrentMaterial = BackgroundMaterial.Mica; }
+
+            try
+            {
+                bool sound = s.Values["EnableSound"] is bool b ? b : true;
+                if (s.Values["EnableSound"] == null)
+                    s.Values["EnableSound"] = true;
+
+                ElementSoundPlayer.State = sound
+                    ? ElementSoundPlayerState.On
+                    : ElementSoundPlayerState.Off;
             }
             catch
             {
-                return "System";
+                ElementSoundPlayer.State = ElementSoundPlayerState.On;
             }
         }
 
-        private static string GetSavedMaterial()
+        public static void ApplyMaterial()
         {
+            if (App.MainWindow == null) return;
+
             try
             {
-                var localSettings = ApplicationData.Current.LocalSettings;
-                return localSettings.Values["AppMaterial"]?.ToString() ?? "MicaAlt";
+                if (App.MainWindow.SystemBackdrop is MicaBackdrop mica)
+                {
+                    if (CurrentMaterial == BackgroundMaterial.Mica && mica.Kind == MicaKind.Base) return;
+                    if (CurrentMaterial == BackgroundMaterial.MicaAlt && mica.Kind == MicaKind.BaseAlt) return;
+                }
+                else if (App.MainWindow.SystemBackdrop is DesktopAcrylicBackdrop &&
+                         CurrentMaterial == BackgroundMaterial.Acrylic)
+                {
+                    return;
+                }
+
+                App.MainWindow.SystemBackdrop = CurrentMaterial switch
+                {
+                    BackgroundMaterial.MicaAlt => new MicaBackdrop { Kind = MicaKind.BaseAlt },
+                    BackgroundMaterial.Acrylic => new DesktopAcrylicBackdrop(),
+                    _ => new MicaBackdrop { Kind = MicaKind.Base }
+                };
             }
-            catch
+            catch (Exception ex)
             {
-                return "MicaAlt";
+                Debug.WriteLine($"ApplyMaterial failed: {ex.Message}");
+                App.MainWindow.SystemBackdrop = null;
             }
         }
+
+        public static void SetupTitleBar()
+        {
+            if (App.MainWindow == null) return;
+
+            try
+            {
+                if (!AppWindowTitleBar.IsCustomizationSupported()) return;
+
+                var titleBar = App.MainWindow.AppWindow.TitleBar;
+                titleBar.ExtendsContentIntoTitleBar = true;
+                titleBar.ButtonBackgroundColor = Colors.Transparent;
+                titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+
+                UpdateTitleBarColors();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SetupTitleBar failed: {ex.Message}");
+            }
+        }
+
+        public static void UpdateTitleBarColors()
+        {
+            if (App.MainWindow == null) return;
+
+            try
+            {
+                if (!AppWindowTitleBar.IsCustomizationSupported()) return;
+
+                var titleBar = App.MainWindow.AppWindow.TitleBar;
+                bool isDark = GetIsDarkTheme();
+
+                var fg = isDark ? Colors.White : Colors.Black;
+                var inactiveFg = isDark
+                    ? Color.FromArgb(255, 128, 128, 128)
+                    : Color.FromArgb(255, 160, 160, 160);
+                var hoverBg = isDark
+                    ? Color.FromArgb(20, 255, 255, 255)
+                    : Color.FromArgb(20, 0, 0, 0);
+
+                titleBar.ButtonForegroundColor = fg;
+                titleBar.ButtonInactiveForegroundColor = inactiveFg;
+                titleBar.ButtonHoverBackgroundColor = hoverBg;
+                titleBar.ButtonHoverForegroundColor = fg;
+                titleBar.ButtonPressedBackgroundColor = Color.FromArgb(30, hoverBg.R, hoverBg.G, hoverBg.B);
+                titleBar.ButtonPressedForegroundColor = fg;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"UpdateTitleBarColors failed: {ex.Message}");
+            }
+        }
+
+        public static void OnActualThemeChanged(FrameworkElement sender, object args)
+        {
+            UpdateTitleBarColors();
+        }
+
+        public static bool GetIsDarkTheme()
+        {
+            if (App.MainWindow?.Content is FrameworkElement root)
+            {
+                var actual = root.ActualTheme;
+                if (actual != ElementTheme.Default)
+                    return actual == ElementTheme.Dark;
+            }
+
+            if (CurrentTheme == ElementTheme.Default)
+                return Application.Current.RequestedTheme == ApplicationTheme.Dark;
+
+            return CurrentTheme == ElementTheme.Dark;
+        }
+    }
+
+    public enum BackgroundMaterial
+    {
+        Mica,
+        MicaAlt,
+        Acrylic
     }
 }

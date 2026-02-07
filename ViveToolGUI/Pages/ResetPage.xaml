@@ -1,0 +1,49 @@
+<Page
+    x:Class="ViVeToolGUI.Pages.ResetPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls">
+
+    <ScrollViewer Padding="20,20,20,0">
+        <StackPanel Spacing="24">
+            <TextBlock x:Uid="Reset_Description"
+                       Style="{StaticResource BodyTextBlockStyle}"
+                       TextWrapping="Wrap"
+                       Opacity="0.7"/>
+
+            <muxc:InfoBar x:Uid="Reset_WarningInfoBar"
+                          Severity="Warning"
+                          IsOpen="True"
+                          IsClosable="False"/>
+
+            <controls:SettingsCard x:Uid="Reset_StandardCard"
+                       HorizontalAlignment="Stretch"
+                       HorizontalContentAlignment="Stretch"
+                       MinHeight="70"
+                       Padding="16,0">
+                <controls:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE777;" />
+                </controls:SettingsCard.HeaderIcon>
+                <StackPanel Spacing="16">
+
+                    <Button x:Name="ResetButton"
+                            x:Uid="Reset_StandardButton"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Click="ResetButton_Click"/>
+                </StackPanel>
+            </controls:SettingsCard>
+
+            <Border x:Name="ResultBorder"
+                    BorderThickness="1"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="8"
+                    Padding="16"
+                    Visibility="Collapsed">
+                <TextBlock x:Name="ResultText"
+                           TextWrapping="Wrap"/>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
