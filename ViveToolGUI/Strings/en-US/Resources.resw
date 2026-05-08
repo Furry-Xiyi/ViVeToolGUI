@@ -190,10 +190,7 @@
     <value>Unknown</value>
   </data>
   <data name="Query_Breadcrumb" xml:space="preserve">
-    <value>Configured Feature Overrides</value>
-  </data>
-  <data name="Query_Description.Text" xml:space="preserve">
-    <value>View feature overrides currently configured on this device.</value>
+    <value>Query</value>
   </data>
   <data name="Query_QueryAllButton.Content" xml:space="preserve">
     <value>Refresh</value>
@@ -202,7 +199,7 @@
     <value>Export</value>
   </data>
   <data name="Query_SearchBox.PlaceholderText" xml:space="preserve">
-    <value>Search configured features</value>
+    <value>Search Features</value>
   </data>
   <data name="Query_HeaderID.Text" xml:space="preserve">
     <value>ID</value>
@@ -214,10 +211,10 @@
     <value>Variant</value>
   </data>
   <data name="Query_HeaderVariantPayload.Text" xml:space="preserve">
-    <value>Variant Payload</value>
+    <value>Description</value>
   </data>
   <data name="Query_Loading" xml:space="preserve">
-    <value>Reading configured feature overrides...</value>
+    <value>Querying Features on the device...</value>
   </data>
   <data name="Menu_EnableFeature.Text" xml:space="preserve">
     <value>Enable</value>
@@ -413,5 +410,11 @@
   </data>
   <data name="AboutViVeCore.Text" xml:space="preserve">
     <value>About ViVeTool Core (Github)</value>
+  </data>
+  <data name="Query_NotificationTitle" xml:space="preserve">
+    <value>Query Completed</value>
+  </data>
+  <data name="Query_NotificationBody" xml:space="preserve">
+    <value>Feature query completed. Found {0} feature configurations.</value>
   </data>
 </root>

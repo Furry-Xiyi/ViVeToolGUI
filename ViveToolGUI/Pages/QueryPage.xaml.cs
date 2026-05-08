@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -15,12 +16,28 @@ using Windows.System.UserProfile;
 
 namespace ViVeToolGUI.Pages
 {
-    public sealed class FeatureInfo
+    public sealed class FeatureInfo : System.ComponentModel.INotifyPropertyChanged
     {
+        private string _state = "";
         public string Id { get; set; } = "";
-        public string State { get; set; } = "";
+
+        public string State
+        {
+            get => _state;
+            set
+            {
+                if (_state != value)
+                {
+                    _state = value;
+                    OnPropertyChanged(nameof(State));
+                }
+            }
+        }
         public string Variant { get; set; } = "";
         public string VariantPayload { get; set; } = "";
+
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
     }
 
     public sealed partial class QueryPage : Page
@@ -47,7 +64,9 @@ namespace ViVeToolGUI.Pages
             QueryAllButton.IsEnabled = false;
             ExportButton.IsEnabled = false;
             SearchBox.IsEnabled = false;
-            MainWindow.Instance?.ShowLoadingOverlay(_resourceLoader.GetString("Query_Loading"));
+            _features.Clear();
+
+            MainWindow.Instance?.ShowTaskbarIndeterminate();
 
             try
             {
@@ -61,16 +80,43 @@ namespace ViVeToolGUI.Pages
                 if (result.ExitCode != 0)
                     throw new InvalidOperationException(GetCommandError(result));
 
-                _allFeatures = await Task.Run(() => ParseQueryOutput(result.Output));
+                var tempList = new System.Collections.Generic.List<FeatureInfo>();
+                int count = 0;
 
-                ApplyFilter();
+                foreach (var feature in StreamParseQueryOutput(result.Output))
+                {
+                    _features.Add(feature);
+                    tempList.Add(feature);
 
+                    if (++count % 10 == 0)
+                    {
+                        await Task.Yield();
+                    }
+                }
+
+                _allFeatures = tempList.ToArray();
                 ExportButton.IsEnabled = _allFeatures.Length > 0;
+
+                MainWindow.Instance?.ShowTaskbarCompleted();
+
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (MainWindow.Instance != null && !MainWindow.Instance.IsWindowActivated)
+                    {
+                        string title = _resourceLoader.GetString("Query_NotificationTitle");
+                        string body = string.Format(
+                            _resourceLoader.GetString("Query_NotificationBody"),
+                            _allFeatures.Length);
+
+                        MainWindow.Instance.ShowNotification(title, body);
+                    }
+                });
             }
             catch (Exception ex)
             {
-                var dialog = new Dialogs.ErrorDialog(ex.Message);
-                dialog.XamlRoot = this.XamlRoot;
+                MainWindow.Instance?.ShowTaskbarError();
+
+                var dialog = new Dialogs.ErrorDialog(ex.Message) { XamlRoot = this.XamlRoot };
                 await dialog.ShowAsync();
             }
             finally
@@ -81,82 +127,66 @@ namespace ViVeToolGUI.Pages
             }
         }
 
-        private FeatureInfo[] ParseQueryOutput(string output)
+        private System.Collections.Generic.IEnumerable<FeatureInfo> StreamParseQueryOutput(string output)
         {
             if (string.IsNullOrWhiteSpace(output))
-                return Array.Empty<FeatureInfo>();
+                yield break;
 
             output = Regex.Replace(output, @"\x1B\[[0-9;]*m", "");
             output = output.Replace("\uFEFF", "");
 
-            var list = new Collection<FeatureInfo>();
             var lines = Regex.Split(output, @"\r\n|\n|\r")
                 .Select(x => x.TrimEnd())
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToArray();
+                .Where(x => !string.IsNullOrWhiteSpace(x));
 
             FeatureInfo current = null;
+            var processedIds = new System.Collections.Generic.HashSet<string>();
 
             foreach (string line in lines)
             {
                 var idMatch = Regex.Match(line, @"\[(\d+)\](?:\s*\(([^)]+)\))?");
                 if (idMatch.Success)
                 {
-                    if (current != null)
-                        list.Add(current);
+                    if (current != null && !processedIds.Contains(current.Id))
+                    {
+                        processedIds.Add(current.Id);
+                        yield return current;
+                    }
 
                     current = new FeatureInfo
                     {
                         Id = Clean(idMatch.Groups[1].Value),
                         VariantPayload = idMatch.Groups[2].Success ? Clean(idMatch.Groups[2].Value.Trim()) : ""
                     };
-
                     continue;
                 }
 
-                if (current == null)
-                    continue;
+                if (current == null) continue;
 
                 if (line.Contains("State", StringComparison.OrdinalIgnoreCase))
                 {
                     var match = Regex.Match(line, @"State\s*:\s*([A-Za-z]+)", RegexOptions.IgnoreCase);
-                    if (match.Success)
-                        current.State = Clean(match.Groups[1].Value);
-
-                    continue;
+                    if (match.Success) current.State = Clean(match.Groups[1].Value);
                 }
-
-                if (line.Contains("Priority", StringComparison.OrdinalIgnoreCase))
+                else if (line.Contains("Priority", StringComparison.OrdinalIgnoreCase))
                 {
                     var match = Regex.Match(line, @"Priority\s*:\s*([A-Za-z]+)", RegexOptions.IgnoreCase);
-                    if (match.Success)
-                        current.Variant = Clean(match.Groups[1].Value);
-
-                    continue;
+                    if (match.Success) current.Variant = Clean(match.Groups[1].Value);
                 }
-
-                if (line.Contains("Type", StringComparison.OrdinalIgnoreCase))
+                else if (line.Contains("Type", StringComparison.OrdinalIgnoreCase))
                 {
                     var match = Regex.Match(line, @"Type\s*:\s*([A-Za-z]+)", RegexOptions.IgnoreCase);
                     if (match.Success)
                     {
-                        if (string.IsNullOrWhiteSpace(current.VariantPayload))
-                            current.VariantPayload = Clean(match.Groups[1].Value);
-                        else
-                            current.VariantPayload = $"{current.VariantPayload} / {Clean(match.Groups[1].Value)}";
+                        current.VariantPayload = string.IsNullOrWhiteSpace(current.VariantPayload)
+                            ? Clean(match.Groups[1].Value)
+                            : $"{current.VariantPayload} / {Clean(match.Groups[1].Value)}";
                     }
                 }
             }
 
-            if (current != null)
-                list.Add(current);
-
-            return list
-                .Where(x => !string.IsNullOrWhiteSpace(x.Id))
-                .GroupBy(x => x.Id)
-                .Select(x => x.First())
-                .OrderBy(x => uint.TryParse(x.Id, out uint id) ? id : uint.MaxValue)
-                .ToArray();
+            if (current != null && !processedIds.Contains(current.Id))
+                yield return current;
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -168,9 +198,7 @@ namespace ViVeToolGUI.Pages
         {
             string text = SearchBox.Text?.Trim() ?? "";
 
-            _features.Clear();
-
-            var source = string.IsNullOrWhiteSpace(text)
+            var filtered = string.IsNullOrWhiteSpace(text)
                 ? _allFeatures
                 : _allFeatures.Where(x =>
                     x.Id.Contains(text, StringComparison.OrdinalIgnoreCase) ||
@@ -178,7 +206,8 @@ namespace ViVeToolGUI.Pages
                     x.Variant.Contains(text, StringComparison.OrdinalIgnoreCase) ||
                     x.VariantPayload.Contains(text, StringComparison.OrdinalIgnoreCase));
 
-            foreach (var item in source)
+            _features.Clear();
+            foreach (var item in filtered)
                 _features.Add(item);
         }
 
@@ -192,28 +221,53 @@ namespace ViVeToolGUI.Pages
             await ApplyFromMenuAsync(sender, false);
         }
 
+        private void MenuFlyout_Opening(object sender, object e)
+        {
+            if (sender is MenuFlyout menu)
+            {
+                if (menu.Target is FrameworkElement targetElement && targetElement.DataContext is FeatureInfo feature)
+                {
+                    var enableItem = menu.Items.FirstOrDefault(i => i is MenuFlyoutItem m && m.Name == "MenuEnable");
+                    var disableItem = menu.Items.FirstOrDefault(i => i is MenuFlyoutItem m && m.Name == "MenuDisable");
+
+                    if (enableItem != null)
+                    {
+                        enableItem.Visibility = feature.State.Equals("Enabled", StringComparison.OrdinalIgnoreCase)
+                            ? Visibility.Collapsed : Visibility.Visible;
+                    }
+
+                    if (disableItem != null)
+                    {
+                        disableItem.Visibility = feature.State.Equals("Disabled", StringComparison.OrdinalIgnoreCase)
+                            ? Visibility.Collapsed : Visibility.Visible;
+                    }
+                }
+            }
+        }
+
         private async void RestoreFeature_Click(object sender, RoutedEventArgs e)
         {
             if (GetFeature(sender) is not FeatureInfo feature || !uint.TryParse(feature.Id, out uint id))
                 return;
 
             MainWindow.Instance?.ShowLoadingOverlay(_resourceLoader.GetString("Query_Loading"));
+            MainWindow.Instance?.ShowTaskbarIndeterminate();
 
             try
             {
-                MainWindow.Instance?.ShowLoadingOverlay(_resourceLoader.GetString("Query_Loading"));
                 var result = await MainWindow.ExecuteViVeToolCommandAsync($"/reset /id:{id}");
 
                 if (result.ExitCode != 0)
                     throw new InvalidOperationException(GetCommandError(result));
 
-                await LoadAsync();
+                feature.State = "Default";
+
+                MainWindow.Instance?.ShowTaskbarCompleted();
             }
             catch (Exception ex)
             {
-                var dialog = new Dialogs.ErrorDialog(ex.Message);
-                dialog.XamlRoot = this.XamlRoot;
-                await dialog.ShowAsync();
+                MainWindow.Instance?.ShowTaskbarError();
+                await new Dialogs.ErrorDialog(ex.Message) { XamlRoot = this.XamlRoot }.ShowAsync();
             }
             finally
             {
@@ -227,30 +281,30 @@ namespace ViVeToolGUI.Pages
                 return;
 
             MainWindow.Instance?.ShowLoadingOverlay(_resourceLoader.GetString("Query_Loading"));
+            MainWindow.Instance?.ShowTaskbarIndeterminate();
 
             try
             {
-                MainWindow.Instance?.ShowLoadingOverlay(_resourceLoader.GetString("Query_Loading"));
                 string command = enable ? "/enable" : "/disable";
                 var result = await MainWindow.ExecuteViVeToolCommandAsync($"{command} /id:{id}");
 
                 if (result.ExitCode != 0)
                     throw new InvalidOperationException(GetCommandError(result));
 
+                feature.State = enable ? "Enabled" : "Disabled";
+
+                MainWindow.Instance?.ShowTaskbarCompleted();
+
                 var dialog = new Dialogs.SuccessDialog(string.IsNullOrWhiteSpace(result.Output)
                     ? _resourceLoader.GetString("Command_Success")
                     : result.Output);
-
                 dialog.XamlRoot = this.XamlRoot;
                 await dialog.ShowAsync();
-
-                await LoadAsync();
             }
             catch (Exception ex)
             {
-                var dialog = new Dialogs.ErrorDialog(ex.Message);
-                dialog.XamlRoot = this.XamlRoot;
-                await dialog.ShowAsync();
+                MainWindow.Instance?.ShowTaskbarError();
+                await new Dialogs.ErrorDialog(ex.Message) { XamlRoot = this.XamlRoot }.ShowAsync();
             }
             finally
             {

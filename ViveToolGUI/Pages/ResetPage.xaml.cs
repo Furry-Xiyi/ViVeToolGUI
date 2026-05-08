@@ -36,6 +36,9 @@ namespace ViVeToolGUI.Pages
             ResetButton.IsEnabled = false;
             ResultBorder.Visibility = Visibility.Collapsed;
 
+            MainWindow.Instance?.ShowLoadingOverlay(_resourceLoader.GetString("Reset_Breadcrumb"));
+            MainWindow.Instance?.ShowTaskbarIndeterminate();
+
             try
             {
                 var result = await MainWindow.ExecuteViVeToolCommandAsync("/fullreset");
@@ -44,6 +47,8 @@ namespace ViVeToolGUI.Pages
 
                 if (result.ExitCode == 0)
                 {
+                    MainWindow.Instance?.ShowTaskbarCompleted();
+
                     ResultText.Text = string.IsNullOrWhiteSpace(result.Output)
                         ? _resourceLoader.GetString("Reset_SuccessMessage")
                         : result.Output;
@@ -54,6 +59,8 @@ namespace ViVeToolGUI.Pages
                 }
                 else
                 {
+                    MainWindow.Instance?.ShowTaskbarError();
+
                     string message = GetCommandError(result);
                     ResultText.Text = message;
 
@@ -64,6 +71,8 @@ namespace ViVeToolGUI.Pages
             }
             catch (Exception ex)
             {
+                MainWindow.Instance?.ShowTaskbarError();
+
                 ResultText.Text = ex.Message;
                 ResultBorder.Visibility = Visibility.Visible;
 
@@ -73,6 +82,7 @@ namespace ViVeToolGUI.Pages
             }
             finally
             {
+                MainWindow.Instance?.HideLoadingOverlay();
                 ResetButton.IsEnabled = true;
             }
         }

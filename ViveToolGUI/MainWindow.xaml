@@ -4,42 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Grid>
-        <Grid x:Name="WindowTitleBar" Height="32" VerticalAlignment="Top">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <Image x:Name="ImgAppIcon"
-                   Width="16"
-                   Height="16"
-                   VerticalAlignment="Center"
-                   Margin="16,0,8,0"
-                   Grid.Column="0"/>
-
-            <TitleBar x:Name="TitleBarArea"
-                      Grid.Column="1"
-                      Height="48"
-                      Background="Transparent"
-                      VerticalAlignment="Center">
-                <TitleBar.LeftHeader>
-                    <StackPanel x:Name="TitleBarContent"
-                                Orientation="Horizontal"
-                                VerticalAlignment="Center"
-                                Margin="0,0">
-                        <TextBlock x:Name="TitleBarAppName"
-                                   VerticalAlignment="Center"
-                                   FontSize="12"/>
-                        <TextBlock x:Uid="SettingsTitle"
-                                   FontSize="14"
-                                   FontWeight="SemiBold"
-                                   Margin="0,3,0,0"/>
-                    </StackPanel>
-                </TitleBar.LeftHeader>
-            </TitleBar>
-        </Grid>
-
-        <Grid Margin="0,32,0,0">
+        <Grid Margin="0,32,0,0"
+              Canvas.ZIndex="0">
             <NavigationView x:Name="NavView"
                             PaneDisplayMode="LeftCompact"
                             IsSettingsVisible="True"
@@ -99,7 +65,8 @@
 
         <Border x:Name="CommonLoadingOverlay"
                 Background="#66000000"
-                Visibility="Collapsed">
+                Visibility="Collapsed"
+                Canvas.ZIndex="10">
             <StackPanel HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Spacing="16">
@@ -114,10 +81,49 @@
             </StackPanel>
         </Border>
 
+        <Grid x:Name="WindowTitleBar"
+              Height="32"
+              VerticalAlignment="Top"
+              Canvas.ZIndex="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Image x:Name="ImgAppIcon"
+                   Width="16"
+                   Height="16"
+                   VerticalAlignment="Center"
+                   Margin="16,0,8,0"
+                   Grid.Column="0"/>
+
+            <TitleBar x:Name="TitleBarArea"
+                      Grid.Column="1"
+                      Height="48"
+                      Background="Transparent"
+                      VerticalAlignment="Center">
+                <TitleBar.LeftHeader>
+                    <StackPanel x:Name="TitleBarContent"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="0,0">
+                        <TextBlock x:Name="TitleBarAppName"
+                                   VerticalAlignment="Center"
+                                   FontSize="12"/>
+                        <TextBlock x:Uid="SettingsTitle"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Margin="0,3,0,0"/>
+                    </StackPanel>
+                </TitleBar.LeftHeader>
+            </TitleBar>
+        </Grid>
+
         <Grid x:Name="SplashOverlay"
               Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
               Visibility="Visible"
-              Opacity="1">
+              Opacity="1"
+              Canvas.ZIndex="30">
             <Grid.Resources>
                 <Storyboard x:Name="SplashFadeOut">
                     <DoubleAnimation Storyboard.TargetName="SplashOverlay"

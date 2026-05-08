@@ -190,10 +190,7 @@
     <value>未知</value>
   </data>
   <data name="Query_Breadcrumb" xml:space="preserve">
-    <value>已配置的功能覆盖</value>
-  </data>
-  <data name="Query_Description.Text" xml:space="preserve">
-    <value>查看当前设备上已配置的功能覆盖项。</value>
+    <value>查询</value>
   </data>
   <data name="Query_QueryAllButton.Content" xml:space="preserve">
     <value>刷新</value>
@@ -202,7 +199,7 @@
     <value>导出</value>
   </data>
   <data name="Query_SearchBox.PlaceholderText" xml:space="preserve">
-    <value>搜索已配置的功能</value>
+    <value>搜索 Features</value>
   </data>
   <data name="Query_HeaderID.Text" xml:space="preserve">
     <value>ID</value>
@@ -214,10 +211,10 @@
     <value>类型</value>
   </data>
   <data name="Query_HeaderVariantPayload.Text" xml:space="preserve">
-    <value>变体负载</value>
+    <value>描述</value>
   </data>
   <data name="Query_Loading" xml:space="preserve">
-    <value>正在读取已配置的功能覆盖项...</value>
+    <value>正在查询设备上的Features...</value>
   </data>
   <data name="Menu_EnableFeature.Text" xml:space="preserve">
     <value>启用</value>
@@ -413,5 +410,11 @@
   </data>
   <data name="AboutViVeCore.Text" xml:space="preserve">
     <value>关于ViVeTool核心 (Github)</value>
+  </data>
+  <data name="Query_NotificationTitle" xml:space="preserve">
+    <value>查询完成</value>
+  </data>
+  <data name="Query_NotificationBody" xml:space="preserve">
+    <value>功能查询已完成，共找到 {0} 个功能配置。</value>
   </data>
 </root>

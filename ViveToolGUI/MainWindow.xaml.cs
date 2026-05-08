@@ -28,6 +28,15 @@ namespace ViVeToolGUI
         public ObservableCollection<string> BreadcrumbItems { get; } = new ObservableCollection<string>();
         private readonly ResourceLoader _loader = new ResourceLoader();
         public static SemaphoreSlim _commandLock = new(1, 1);
+        private IntPtr _mainHwnd = IntPtr.Zero;
+        private static IntPtr _taskbarPtr = IntPtr.Zero;
+        private static bool _taskbarReady = false;
+        private static int _taskbarState = 0;
+        private static IntPtr _fnSetProgressValue;
+        private static IntPtr _fnSetProgressState;
+        private static readonly uint WM_TASKBARBUTTONCREATED = RegisterWindowMessage("TaskbarButtonCreated");
+        private CancellationTokenSource _taskbarAutoClearCts;
+        public bool IsWindowActivated { get; private set; } = true;
 
         public async void OpenExternalLink(object sender, RoutedEventArgs e)
         {
@@ -70,8 +79,10 @@ namespace ViVeToolGUI
             if (Content is FrameworkElement rootEl)
                 rootEl.Loaded += Root_Loaded;
 
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            SetMinWindowSize(hwnd, minWidth: 800, minHeight: 520);
+            _mainHwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            SetMinWindowSize(_mainHwnd, minWidth: 800, minHeight: 520);
+
+            ChangeWindowMessageFilterEx(_mainHwnd, WM_TASKBARBUTTONCREATED, MSGFLT_ALLOW, IntPtr.Zero);
         }
 
         public void StartLoadingContent()
@@ -91,6 +102,108 @@ namespace ViVeToolGUI
         public void HideLoadingOverlay()
         {
             CommonLoadingOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        public void ShowTaskbarIndeterminate()
+        {
+            CancelTaskbarAutoClear();
+            SetProgressIndeterminate();
+        }
+
+        public async void ShowTaskbarError(int autoClearMilliseconds = 3500)
+        {
+            CancelTaskbarAutoClear();
+
+            SetProgressError();
+
+            if (autoClearMilliseconds > 0)
+            {
+                _taskbarAutoClearCts = new CancellationTokenSource();
+                var token = _taskbarAutoClearCts.Token;
+
+                try
+                {
+                    await Task.Delay(autoClearMilliseconds, token);
+
+                    if (!token.IsCancellationRequested)
+                        ClearProgress();
+                }
+                catch (TaskCanceledException)
+                {
+                }
+            }
+        }
+
+        public async void ShowTaskbarCompleted(int autoClearMilliseconds = 1200)
+        {
+            CancelTaskbarAutoClear();
+
+            SetProgressCompleted();
+            FlashTaskbarButton();
+
+            if (autoClearMilliseconds > 0)
+            {
+                _taskbarAutoClearCts = new CancellationTokenSource();
+                var token = _taskbarAutoClearCts.Token;
+
+                try
+                {
+                    await Task.Delay(autoClearMilliseconds, token);
+
+                    if (!token.IsCancellationRequested)
+                        ClearProgress();
+                }
+                catch (TaskCanceledException)
+                {
+                }
+            }
+        }
+
+        public void ClearTaskbarProgress()
+        {
+            CancelTaskbarAutoClear();
+            ClearProgress();
+        }
+
+        private void CancelTaskbarAutoClear()
+        {
+            try
+            {
+                _taskbarAutoClearCts?.Cancel();
+                _taskbarAutoClearCts?.Dispose();
+            }
+            catch
+            {
+            }
+
+            _taskbarAutoClearCts = null;
+        }
+
+        private void FlashTaskbarButton()
+        {
+            try
+            {
+                if (_mainHwnd == IntPtr.Zero)
+                    _mainHwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+
+                if (_mainHwnd == IntPtr.Zero)
+                    return;
+
+                FLASHWINFO info = new FLASHWINFO
+                {
+                    cbSize = Convert.ToUInt32(Marshal.SizeOf<FLASHWINFO>()),
+                    hwnd = _mainHwnd,
+                    dwFlags = FLASHW_TRAY | FLASHW_TIMERNOFG,
+                    uCount = 3,
+                    dwTimeout = 0
+                };
+
+                FlashWindowEx(ref info);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"FlashTaskbarButton Error: {ex.Message}");
+            }
         }
 
         private static Type TagToPageType(string tag)
@@ -181,7 +294,38 @@ namespace ViVeToolGUI
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
             bool isActive = args.WindowActivationState != WindowActivationState.Deactivated;
+            IsWindowActivated = isActive;
             TitleBarAppName.Opacity = isActive ? 1.0 : 0.5;
+        }
+
+        public void ShowNotification(string title, string body)
+        {
+            try
+            {
+                var notifier = Windows.UI.Notifications.ToastNotificationManager.CreateToastNotifier();
+
+                string toastXml = $@"
+<toast>
+    <visual>
+        <binding template='ToastGeneric'>
+            <text>{System.Security.SecurityElement.Escape(title)}</text>
+            <text>{System.Security.SecurityElement.Escape(body)}</text>
+        </binding>
+    </visual>
+</toast>";
+
+                var xmlDoc = new Windows.Data.Xml.Dom.XmlDocument();
+                xmlDoc.LoadXml(toastXml);
+
+                var toast = new Windows.UI.Notifications.ToastNotification(xmlDoc);
+                notifier.Show(toast);
+
+                Debug.WriteLine($"[Notification] Sent: {title} - {body}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ShowNotification Error: {ex.Message}");
+            }
         }
 
         public async Task FinishLoadingAndHideSplashAsync()
@@ -203,6 +347,14 @@ namespace ViVeToolGUI
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
         {
+            try
+            {
+                ClearTaskbarProgress();
+            }
+            catch
+            {
+            }
+
             try
             {
                 string tempDir = Path.Combine(
@@ -387,8 +539,88 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
             SetWindowSubclass(hwnd, _subclassProc, 0, 0);
         }
 
+        public unsafe void SetProgress(int percent)
+        {
+            if (!_taskbarReady) return;
+            if (_taskbarState != 2)
+            {
+                ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)
+                    (_taskbarPtr, _mainHwnd, 2);
+                _taskbarState = 2;
+            }
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, ulong, ulong, int>)_fnSetProgressValue)
+                (_taskbarPtr, _mainHwnd, (ulong)Math.Clamp(percent, 0, 100), 100UL);
+        }
+
+        public unsafe void SetProgressIndeterminate()
+        {
+            if (!_taskbarReady || _taskbarState == 1) return;
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)
+                (_taskbarPtr, _mainHwnd, 1);
+            _taskbarState = 1;
+            Debug.WriteLine("[Taskbar] State = Indeterminate");
+        }
+
+        public unsafe void ClearProgress()
+        {
+            if (!_taskbarReady || _taskbarState == 0) return;
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)
+                (_taskbarPtr, _mainHwnd, 0);
+            _taskbarState = 0;
+        }
+
+        public unsafe void SetProgressError()
+        {
+            if (!_taskbarReady) return;
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)
+                (_taskbarPtr, _mainHwnd, 4); // TBPF_ERROR
+            _taskbarState = 4;
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, ulong, ulong, int>)_fnSetProgressValue)
+                (_taskbarPtr, _mainHwnd, 100UL, 100UL);
+        }
+
+        public unsafe void SetProgressCompleted()
+        {
+            if (!_taskbarReady) return;
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)
+                (_taskbarPtr, _mainHwnd, 2); // TBPF_NORMAL
+            _taskbarState = 2;
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, ulong, ulong, int>)_fnSetProgressValue)
+                (_taskbarPtr, _mainHwnd, 100UL, 100UL);
+        }
+
+        private static unsafe void OnTaskbarButtonCreated()
+        {
+#pragma warning disable IL2026
+            if (_taskbarReady) return;
+
+            var clsid = new Guid(0x56fdf344, 0xfd6d, 0x11d0, 0x95, 0x8a, 0x00, 0x60, 0x97, 0xc9, 0xa0, 0x90);
+            var iid = new Guid(0xea1afb91, 0x9e28, 0x4b86, 0x90, 0xe9, 0x9e, 0x9f, 0x8a, 0x5e, 0xef, 0xaf);
+
+            if (CoCreateInstance(ref clsid, IntPtr.Zero, 1u, ref iid, out var ptr) != 0 || ptr == IntPtr.Zero)
+                return;
+
+            void** vtbl = *(void***)ptr.ToPointer();
+
+            var hrInit = (delegate* unmanaged[Stdcall]<IntPtr, int>)vtbl[3];
+            if (hrInit(ptr) != 0)
+            {
+                ((delegate* unmanaged[Stdcall]<IntPtr, uint>)vtbl[2])(ptr);
+                return;
+            }
+
+            _fnSetProgressValue = (IntPtr)vtbl[9];
+            _fnSetProgressState = (IntPtr)vtbl[10];
+
+            _taskbarPtr = ptr;
+            _taskbarReady = true;
+
+            Debug.WriteLine("[Taskbar] ITaskbarList3 initialized via unsafe vtable.");
+#pragma warning restore IL2026
+        }
+
         static nuint SubclassProc(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam,
-                                   nuint uIdSubclass, nuint dwRefData)
+                           nuint uIdSubclass, nuint dwRefData)
         {
             if (uMsg == 0x0024)
             {
@@ -397,6 +629,12 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
                 info.ptMinTrackSize.x = (int)(_minW * dpi);
                 info.ptMinTrackSize.y = (int)(_minH * dpi);
                 Marshal.StructureToPtr(info, lParam, true);
+            }
+
+            // 拦截 TaskbarButtonCreated 消息
+            if (uMsg == WM_TASKBARBUTTONCREATED)
+            {
+                OnTaskbarButtonCreated();
             }
 
             return DefSubclassProc(hWnd, uMsg, wParam, lParam);
@@ -408,6 +646,9 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
         [DllImport("comctl32.dll")]
         static extern bool SetWindowSubclass(IntPtr hWnd, SUBCLASSPROC pfnSubclass,
                                               nuint uIdSubclass, nuint dwRefData);
+        [DllImport("ole32.dll")]
+        static extern int CoCreateInstance(ref Guid rclsid, IntPtr pUnkOuter, uint dwClsContext,
+                                    ref Guid riid, out IntPtr ppv);
 
         [DllImport("comctl32.dll")]
         static extern nuint DefSubclassProc(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam);
@@ -426,6 +667,30 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
         {
             public int x, y;
         }
+        
+        private const uint FLASHW_TRAY = 0x00000002;
+        private const uint FLASHW_TIMERNOFG = 0x0000000C;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct FLASHWINFO
+        {
+            public uint cbSize;
+            public IntPtr hwnd;
+            public uint dwFlags;
+            public uint uCount;
+            public uint dwTimeout;
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool FlashWindowEx(ref FLASHWINFO pwfi);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern uint RegisterWindowMessage(string lpString);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool ChangeWindowMessageFilterEx(IntPtr hwnd, uint msg, uint action, IntPtr pChangeFilterStruct);
+
+        private const uint MSGFLT_ALLOW = 1;
 
         private void Root_Loaded(object sender, RoutedEventArgs e)
         {

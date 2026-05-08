@@ -11,7 +11,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0"
-                    Padding="20,20,20,16"
+                    Padding="20,20,20,20"
                     Orientation="Horizontal"
                     Spacing="12">
             <Button x:Name="QueryAllButton"
@@ -50,7 +50,7 @@
                     </Grid.RowDefinitions>
 
                     <Grid Grid.Row="0"
-                          Padding="17,8,12,8"
+                          Padding="25,8,12,8"
                           ColumnSpacing="12"
                           Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
                         <Grid.ColumnDefinitions>
@@ -82,26 +82,27 @@
                                 <Grid Padding="12,6"
                                       ColumnSpacing="12">
                                     <Grid.ContextFlyout>
-                                        <MenuFlyout>
-                                            <MenuFlyoutItem x:Uid="Menu_EnableFeature"
-                                                            Click="EnableFeature_Click"
-                                                            CommandParameter="{x:Bind}">
+                                        <MenuFlyout Opening="MenuFlyout_Opening">
+                                            <MenuFlyoutItem x:Name="MenuEnable" 
+                    x:Uid="Menu_EnableFeature"
+                    Click="EnableFeature_Click"
+                    CommandParameter="{x:Bind}">
                                                 <MenuFlyoutItem.Icon>
                                                     <FontIcon Glyph="&#xE73E;"/>
                                                 </MenuFlyoutItem.Icon>
                                             </MenuFlyoutItem>
-
-                                            <MenuFlyoutItem x:Uid="Menu_DisableFeature"
-                                                            Click="DisableFeature_Click"
-                                                            CommandParameter="{x:Bind}">
+                                            <MenuFlyoutItem x:Name="MenuDisable" 
+                    x:Uid="Menu_DisableFeature"
+                    Click="DisableFeature_Click"
+                    CommandParameter="{x:Bind}">
                                                 <MenuFlyoutItem.Icon>
                                                     <FontIcon Glyph="&#xE711;"/>
                                                 </MenuFlyoutItem.Icon>
                                             </MenuFlyoutItem>
 
                                             <MenuFlyoutItem x:Uid="Menu_RestoreFeature"
-                                                            Click="RestoreFeature_Click"
-                                                            CommandParameter="{x:Bind}">
+                    Click="RestoreFeature_Click"
+                    CommandParameter="{x:Bind}">
                                                 <MenuFlyoutItem.Icon>
                                                     <FontIcon Glyph="&#xE777;"/>
                                                 </MenuFlyoutItem.Icon>

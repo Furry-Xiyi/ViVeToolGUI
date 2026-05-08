@@ -93,6 +93,7 @@ namespace ViVeToolGUI.Pages
 
             SetBusy(false);
             MainWindow.Instance?.ShowLoadingOverlay(GetResourceText("EnableDisable_RestoreButton"));
+            MainWindow.Instance?.ShowTaskbarIndeterminate();
 
             try
             {
@@ -101,17 +102,21 @@ namespace ViVeToolGUI.Pages
 
                 if (result.ExitCode == 0)
                 {
+                    MainWindow.Instance?.ShowTaskbarCompleted();
+
                     var dialog = new Dialogs.SuccessDialog(_resourceLoader.GetString("FeatureStore_RestoreSuccess"));
                     dialog.XamlRoot = this.XamlRoot;
                     await dialog.ShowAsync();
                 }
                 else
                 {
+                    MainWindow.Instance?.ShowTaskbarError();
                     await ShowErrorAsync(GetCommandError(result));
                 }
             }
             catch (Exception ex)
             {
+                MainWindow.Instance?.ShowTaskbarError();
                 await ShowErrorAsync(ex.Message);
             }
             finally
@@ -130,6 +135,7 @@ namespace ViVeToolGUI.Pages
             MainWindow.Instance?.ShowLoadingOverlay(GetResourceText(enable
                 ? "EnableDisable_EnableButton"
                 : "EnableDisable_DisableButton"));
+            MainWindow.Instance?.ShowTaskbarIndeterminate();
 
             try
             {
@@ -157,6 +163,8 @@ namespace ViVeToolGUI.Pages
 
                 if (result.ExitCode == 0)
                 {
+                    MainWindow.Instance?.ShowTaskbarCompleted();
+
                     string successKey = enable
                         ? "FeatureStore_EnableSuccess"
                         : "FeatureStore_DisableSuccess";
@@ -167,11 +175,13 @@ namespace ViVeToolGUI.Pages
                 }
                 else
                 {
+                    MainWindow.Instance?.ShowTaskbarError();
                     await ShowErrorAsync(GetCommandError(result));
                 }
             }
             catch (Exception ex)
             {
+                MainWindow.Instance?.ShowTaskbarError();
                 await ShowErrorAsync(ex.Message);
             }
             finally
