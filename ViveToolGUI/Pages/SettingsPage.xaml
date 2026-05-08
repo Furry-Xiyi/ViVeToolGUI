@@ -156,6 +156,18 @@
                                          HorizontalAlignment="Left">
                             <TextBlock x:Uid="DiscordGroup" VerticalAlignment="Center"/>
                         </HyperlinkButton>
+
+                        <HyperlinkButton Click="OpenExternalLink"
+                 Tag="https://space.bilibili.com/45521453"
+                 HorizontalAlignment="Left">
+                            <TextBlock x:Uid="AboutMyFriend" VerticalAlignment="Center"/>
+                        </HyperlinkButton>
+
+                        <HyperlinkButton Click="OpenExternalLink"
+                 Tag="https://github.com/thebookisclosed/ViVe"
+                 HorizontalAlignment="Left">
+                            <TextBlock x:Uid="AboutViVeCore" VerticalAlignment="Center"/>
+                        </HyperlinkButton>
                     </StackPanel>
                 </Expander>
 

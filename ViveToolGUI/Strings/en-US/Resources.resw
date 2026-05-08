@@ -408,4 +408,10 @@
   <data name="Query_ViewButton.Content" xml:space="preserve">
     <value>View the organized Features</value>
   </data>
+  <data name="AboutMyFriend.Text" xml:space="preserve">
+    <value>About the Feature ID Organizer</value>
+  </data>
+  <data name="AboutViVeCore.Text" xml:space="preserve">
+    <value>About ViVeTool Core (Github)</value>
+  </data>
 </root>

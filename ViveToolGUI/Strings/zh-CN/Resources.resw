@@ -408,4 +408,10 @@
   <data name="Query_ViewButton.Content" xml:space="preserve">
     <value>查看已整理的Features</value>
   </data>
+  <data name="AboutMyFriend.Text" xml:space="preserve">
+    <value>关于Feature ID整理者</value>
+  </data>
+  <data name="AboutViVeCore.Text" xml:space="preserve">
+    <value>关于ViVeTool核心 (Github)</value>
+  </data>
 </root>
