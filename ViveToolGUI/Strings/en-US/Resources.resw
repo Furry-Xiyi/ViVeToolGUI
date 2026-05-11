@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppDisplayName" xml:space="preserve">
-    <value>ViVeTool GUI</value>
+    <value>Xiyi ViVeTool GUI</value>
   </data>
   <data name="Nav_EnableDisable.Content" xml:space="preserve">
     <value>Enable/Disable</value>
@@ -193,7 +193,7 @@
     <value>Query</value>
   </data>
   <data name="Query_QueryAllButton.Content" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Start query</value>
   </data>
   <data name="Query_ExportButton.Content" xml:space="preserve">
     <value>Export</value>

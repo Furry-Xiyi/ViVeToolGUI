@@ -5,9 +5,8 @@ namespace ViVeToolGUI.Dialogs
 {
     public sealed partial class ExportOptionsDialog : ContentDialog
     {
-        public bool ExportTxt => OptionTxt.IsChecked == true;
         public bool ExportCsv => OptionCsv.IsChecked == true;
-        public bool ExportJson => OptionJson.IsChecked == true;
+        public bool ExportTxt => OptionTxt.IsChecked == true;
 
         public ExportOptionsDialog()
         {

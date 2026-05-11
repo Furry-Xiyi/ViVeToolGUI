@@ -337,14 +337,26 @@ namespace ViVeToolGUI.Pages
                 if (_allFeatures.Length == 0)
                     return;
 
+                // 1. 先展示导出选项对话框
+                var optionsDialog = new Dialogs.ExportOptionsDialog();
+                optionsDialog.XamlRoot = this.XamlRoot;
+
+                var optionsResult = await optionsDialog.ShowAsync();
+
+                // 如果未选择Primary（确认导出），则取消
+                if (optionsResult != ContentDialogResult.Primary)
+                    return;
+
                 ExportButton.IsEnabled = false;
 
                 var documentsFolder = await StorageFolder.GetFolderFromPathAsync(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
 
-                string fileName = $"{_resourceLoader.GetString("Export_FilePrefix")}_{DateTime.Now:yyyyMMdd_HHmmss}.md";
-                var file = await documentsFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
+                bool isCsv = optionsDialog.ExportCsv;
+                string extension = isCsv ? "csv" : "txt";
+                string fileName = $"{_resourceLoader.GetString("Export_FilePrefix")}_{DateTime.Now:yyyyMMdd_HHmmss}.{extension}";
 
+                var file = await documentsFolder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName);
                 var sb = new StringBuilder();
 
                 string idHeader = GetResourceText("Query_HeaderID");
@@ -352,20 +364,36 @@ namespace ViVeToolGUI.Pages
                 string variantHeader = GetResourceText("Query_HeaderVariant");
                 string payloadHeader = GetResourceText("Query_HeaderVariantPayload");
 
-                sb.AppendLine($"| {EscapeMarkdown(idHeader)} | {EscapeMarkdown(stateHeader)} | {EscapeMarkdown(variantHeader)} | {EscapeMarkdown(payloadHeader)} |");
-                sb.AppendLine("|---|---|---|---|");
-
-                foreach (var f in _allFeatures)
+                // 根据用户选项输出内容
+                if (isCsv)
                 {
-                    sb.AppendLine(
-                        $"| {EscapeMarkdown(f.Id)} | {EscapeMarkdown(f.State)} | {EscapeMarkdown(f.Variant)} | {EscapeMarkdown(f.VariantPayload)} |");
+                    sb.AppendLine($"{idHeader},{stateHeader},{variantHeader},{payloadHeader}");
+                    foreach (var f in _allFeatures)
+                    {
+                        sb.AppendLine($"{f.Id},{f.State},{f.Variant},{f.VariantPayload}");
+                    }
+                }
+                else
+                {
+                    foreach (var f in _allFeatures)
+                    {
+                        sb.AppendLine($"ID: {f.Id} | State: {f.State} | Variant: {f.Variant} | Payload: {f.VariantPayload}");
+                    }
                 }
 
                 await FileIO.WriteTextAsync(file, sb.ToString());
 
-                var dialog = new Dialogs.SuccessDialog(_resourceLoader.GetString("Export_Success"), documentsFolder.Path);
-                dialog.XamlRoot = this.XamlRoot;
-                await dialog.ShowAsync();
+                // 2. 导出完成后显示 ExternalOpenDialog
+                var openDialog = new Dialogs.ExternalOpenDialog();
+                openDialog.XamlRoot = this.XamlRoot;
+
+                // 由于 ExternalOpenDialog 不得硬编码，这里可设置通用Uid完成提示，如需动态传入路径，可在后台设置其Content绑定
+                await openDialog.ShowAsync();
+
+                if (openDialog.UserConfirmed)
+                {
+                    await Launcher.LaunchFileAsync(file);
+                }
             }
             catch (Exception ex)
             {
@@ -379,29 +407,14 @@ namespace ViVeToolGUI.Pages
             }
         }
 
-        private async void ViewButton_Click(object sender, RoutedEventArgs e)
+        private void ViewButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                string folder = GetFeatureTextFolder();
-                var file = await StorageFile.GetFileFromApplicationUriAsync(
-                    new Uri($"ms-appx:///Strings/{folder}/Features.txt"));
+            string folder = GetFeatureTextFolder();
+            // 确保这里的 Uri 格式是正确的 ms-appx
+            string uriPath = $"ms-appx:///Strings/{folder}/Features.txt";
 
-                bool launched = await Launcher.LaunchFileAsync(file);
-
-                if (!launched)
-                {
-                    var dialog = new Dialogs.ErrorDialog(file.Path);
-                    dialog.XamlRoot = this.XamlRoot;
-                    await dialog.ShowAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                var dialog = new Dialogs.ErrorDialog(ex.Message);
-                dialog.XamlRoot = this.XamlRoot;
-                await dialog.ShowAsync();
-            }
+            var viewerWindow = new AppWindows.TextFileViewerWindow(uriPath);
+            viewerWindow.Activate();
         }
 
         private string GetFeatureTextFolder()

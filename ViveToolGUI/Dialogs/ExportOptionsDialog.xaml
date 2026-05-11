@@ -14,16 +14,12 @@
                    FontSize="14"
                    TextWrapping="Wrap"/>
 
-        <CheckBox x:Name="OptionTxt"
-                  x:Uid="Dialog_ExportOptions_OptionTxt"
-                  IsChecked="True"/>
-
         <CheckBox x:Name="OptionCsv"
                   x:Uid="Dialog_ExportOptions_OptionCsv"
                   IsChecked="True"/>
 
-        <CheckBox x:Name="OptionJson"
-                  x:Uid="Dialog_ExportOptions_OptionJson"
+        <CheckBox x:Name="OptionTxt"
+                  x:Uid="Dialog_ExportOptions_OptionTxt"
                   IsChecked="False"/>
 
     </StackPanel>

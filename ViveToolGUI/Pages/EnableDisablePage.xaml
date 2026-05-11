@@ -20,7 +20,7 @@
                        Padding="16,0"
                        Margin="0,0,0,5">
                 <controls:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE7C3;"
+                    <FontIcon Glyph="&#xF1AD;"
                               FontSize="28"/>
                 </controls:SettingsCard.HeaderIcon>
 
@@ -65,7 +65,7 @@
                 <Expander.Header>
                     <StackPanel Orientation="Horizontal"
                                 Spacing="12">
-                        <FontIcon Glyph="&#xE9D2;"
+                        <FontIcon Glyph="&#xEC7A;"
                                   Width="25"
                                   FontSize="20"/>
                         <StackPanel Margin="5,0,0,0">

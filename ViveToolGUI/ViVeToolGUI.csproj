@@ -22,6 +22,9 @@
 	  <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
       <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="AppWindows\TextFileViewerWindow.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
@@ -62,6 +65,9 @@
     <None Update="Strings\zh-CN\Features.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Windows\TextFileViewerWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Dialogs\ExternalOpenDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
