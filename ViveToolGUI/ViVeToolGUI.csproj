@@ -19,13 +19,9 @@
 	  <SelfContained>false</SelfContained>
 	  <DebugType>none</DebugType>
       <DebugSymbols>false</DebugSymbols>
-      <NativeLib>Static</NativeLib>
 	  <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
       <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Properties\PublishProfiles\win-x64.pubxml" />
-  </ItemGroup>
 
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
