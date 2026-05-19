@@ -261,6 +261,7 @@ namespace ViVeToolGUI.Pages
                     throw new InvalidOperationException(GetCommandError(result));
 
                 feature.State = "Default";
+                OperationLogger.Append(feature.Id, "Restore");
 
                 MainWindow.Instance?.ShowTaskbarCompleted();
             }
@@ -292,6 +293,7 @@ namespace ViVeToolGUI.Pages
                     throw new InvalidOperationException(GetCommandError(result));
 
                 feature.State = enable ? "Enabled" : "Disabled";
+                OperationLogger.Append(feature.Id, enable ? "Enable" : "Disable");
 
                 MainWindow.Instance?.ShowTaskbarCompleted();
 

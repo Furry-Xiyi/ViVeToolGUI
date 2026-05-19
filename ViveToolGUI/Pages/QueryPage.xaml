@@ -76,7 +76,7 @@
 
                     <ListView x:Name="FeaturesListView"
                               Grid.Row="1"
-                              SelectionMode="Extended">
+                              SelectionMode="Single">
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="local:FeatureInfo">
                                 <Grid Padding="12,6"

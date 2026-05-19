@@ -1,7 +1,4 @@
-﻿Manganese Windows 10 rs_prerelease/mn_release 19536-19645
-New boot animation enable method: Open Registry Editor (Win+R, type regedit), navigate to HKLM\System\ControlSet001\Control\BootControl (create the key if it doesn't exist), then create a DWORD32 value named bootprogressanimation inside, and set its data to 1.
-(19578 disabled by default, 22449 enabled by default)
-------------------------------------------
+﻿⚠Machine translation, the results may not be accurate.
 Iron Windows 10 rs_prerelease 20150-20279
 20438551  Redesigned emoji picker and touch keyboard improvements (20206 only enabled by default for upgrades, temporarily removed in 20246, 21227 only enabled by default for upgrades, 21313 enabled by default for both upgrades and clean installs)
 26336822  Windows 10x new OOBE (disabled by default in 20226, removed in 20246, enabled in 21996)
@@ -15,7 +12,7 @@ Cobalt Windows 10 rs_prerelease/co_release 21227-21390.2025
 27924070  ???
 26920259  (Not sure about the exact name, but it copies OEM drivers to C:\Windows\OEMDRIVERS, after running and restarting, the drivers are applied)
 30848613  (After enabling, the power page will have a new option to automatically resume apps that were open before restart, enabled by default in 21359, moved to Settings in 22000.51)
-.\vivetool /disable /id:41866508  Disable the hybrid taskbar search icon on Win10
+41866508  Disable the hybrid taskbar search icon on Win10
 -----------------------------------------
 Cobalt Windows 11 21H2 co_release 22000.51-22000.xxxx
 25704915  Shows estimated install completion time (but Microsoft doesn't want people without the rollout to enable this hidden feature, how strange), suspected fully enabled in 22000.65)
@@ -39,7 +36,7 @@ Nickel Windows 11 22H2-23H2 rs_prerelease/ni_release 22449-2263x
 37041514 New item "Select default microphone" added to voice typing settings menu (now promoted to stable users)
 35674037  Media controls on the lock screen have been updated to match the design shown in "Quick Settings" (A/B testing started in 22543) (now promoted to stable users)
 35674037  Lock screen media controls updated to match "Quick Settings" design (A/B testing started in 22543) (now promoted to stable users)
-.\vivetool /disable /id:33122876  Hide hardware unqualified display watermark
+33122876  Hide hardware unqualified display watermark
 Or apply the following registry value:
 [HKEY_CURRENT_USER\Control Panel\UnsupportedHardwareNotificationCache]
 "SV2"=dword:00000000
@@ -312,7 +309,7 @@ Since the Beta channel always receives new feature updates first, feature launch
 45738940  New "Share" button added next to recently used items in Jump List for quick sharing. Disabled by default. (22635.4445) (requires 48433719)
 53655156 /variant:1/2/3/4/5 53655173  Feature to show additional descriptions and ⊞ Win+Z shortcut hints implemented in Snap Assist. Disabled by default (22635.4510)
 41598133,41670003  Redesigned "Reset this PC" and "Go back to earlier version" dialogs were reimplemented in builds 25231 and 25247 respectively, but later completely removed in build 26085. Disabled by default (27744)
-.\vivetool /disable /id:51960011  Fix File Explorer menu popping up (may cause thin lines on tabs)
+51960011  Fix File Explorer menu popping up (may cause thin lines on tabs)
 54237951  Unknown new feature in Settings
 48822452  Improvements to battery icon in system tray (requires 48433719)
 54865932  Improved support for web search providers in Windows Search, including clearer provider properties in tabs (previously implemented for European Economic Area (EEA) users in build 26120.2510, and can be manually activated by enabling the velocity staging key)
@@ -429,3 +426,11 @@ Since the Beta channel always receives new feature updates first, feature launch
 60897831  List of all available updates shown under the Windows Update page has been moved to a collapsible "Available updates" section. (26220.8283)
 60662124  New "Screen color temperature" setting in the Accessibility section of the Settings app. (26220.8283)
 60511437  New transition effects when hovering over open apps or app groups on the taskbar (previously only had hover animations, now includes app switching and other animations) (already existed before, now migrated to new ID) (26220.7877)
+61014711 Allows you to try the new file size format in File Explorer.
+60716524 New low latency profile (unclear what it is)
+61391826 New low latency profile for application startup (unclear what it is)
+???????? Feature to install recommended apps directly through the Share flyout window via Microsoft Store is gradually being rolled out to Azure Active Directory (AAD) users.
+59213768 The taskbar position (vertical taskbar) feature, missing since the initial release of Windows 11, has been re-added and is being gradually promoted.
+61090762 A new compact taskbar with smaller icons and reduced height has been added; it can be toggled via the "Show smaller taskbar buttons" dropdown in Settings → Personalisation → Taskbar.
+???????? The context menu in File Explorer now has a new refresh option.
+???????? Print options will also appear in the modern context menu along with the option to quickly create shortcuts in the current folder.

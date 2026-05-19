@@ -417,4 +417,34 @@
   <data name="Query_NotificationBody" xml:space="preserve">
     <value>Feature query completed. Found {0} feature configurations.</value>
   </data>
+  <data name="TextFileViewerWindowMatchCaseToggle.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Match case</value>
+  </data>
+  <data name="TextFileViewerWindowPrevButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="TextFileViewerWindowNextButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="TextFileViewerWindowSearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search feathres...</value>
+  </data>
+  <data name="TextFileViewerWindowTitle" xml:space="preserve">
+    <value>View the organized Features</value>
+  </data>
+  <data name="History.Text" xml:space="preserve">
+    <value>History</value>
+  </data>
+  <data name="ClearHistoryButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Clear history</value>
+  </data>
+  <data name="History_HeaderTime.Text" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name=".Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Menu_HistoryDelete.Text" xml:space="preserve">
+    <value>Delete this history</value>
+  </data>
 </root>
