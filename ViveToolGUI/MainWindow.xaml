@@ -4,40 +4,97 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Grid>
-        <Grid Margin="0,32,0,0"
-              Canvas.ZIndex="0">
+        <!-- 1. 自定义返回按钮 -->
+        <Button x:Name="BackButton"
+                x:Uid="BackButton"
+                VerticalAlignment="Top" HorizontalAlignment="Left"
+                Margin="8,8,8,8"
+                Height="32"
+                Width="32"
+                Style="{ThemeResource TitleBarBackButtonStyle}"
+                Visibility="Collapsed"
+                Click="BackButton_Click"
+                Canvas.ZIndex="20"/>
+        <!-- 2. 应用图标 -->
+        <Image x:Name="ImgAppIcon" Width="16" Height="16" VerticalAlignment="Top" HorizontalAlignment="Left"
+               Margin="18,16,0,0" IsHitTestVisible="False" Canvas.ZIndex="20"/>
+
+        <!-- 3. 自定义标题栏 -->
+        <TitleBar x:Name="TitleBarArea" VerticalAlignment="Top"
+                  Margin="18,0,0,0"
+                  IsBackButtonVisible="False"
+                  BackRequested="TitleBar_BackRequested"
+                  Canvas.ZIndex="20">
+            <TitleBar.IconSource>
+                <ImageIconSource/>
+            </TitleBar.IconSource>
+            <TitleBar.LeftHeader>
+                <StackPanel x:Name="TitleBarContent"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="28,0,0,0">
+                    <!-- 新增左边距，为外部跟随位移的 Image 留出空间 -->
+                    <TextBlock x:Name="TitleBarAppName"
+                               VerticalAlignment="Center"
+                               FontSize="12"/>
+                    <TextBlock x:Uid="SettingsTitle"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Margin="4,0,0,0"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </TitleBar.LeftHeader>
+        </TitleBar>
+        <!-- 4. 导航栏 (照搬无边框设计) -->
+        <Grid x:Name="NavViewContainer" Margin="0,32,0,0" Canvas.ZIndex="0">
             <NavigationView x:Name="NavView"
                             PaneDisplayMode="LeftCompact"
-                            IsSettingsVisible="True"
-                            IsBackButtonVisible="Visible"
-                            BackRequested="NavView_BackRequested"
+                            IsSettingsVisible="False"
+                            IsBackButtonVisible="Collapsed"
+                            IsPaneToggleButtonVisible="False"
+                            OpenPaneLength="72"
+                            CompactModeThresholdWidth="0"
+                            ExpandedModeThresholdWidth="0"
+                            CompactPaneLength="72"
+                            SelectionChanged="NavView_SelectionChanged"
                             ItemInvoked="NavView_ItemInvoked">
+
                 <NavigationView.MenuItems>
-                    <NavigationViewItem x:Uid="Nav_EnableDisable" Tag="enableDisable">
+                    <NavigationViewItem x:Name="EnableDisableNavItem" x:Uid="Nav_EnableDisable" Tag="enableDisable">
                         <NavigationViewItem.Icon>
-                            <FontIcon Glyph="&#xE90F;"/>
+                            <FontIcon x:Name="EnableDisableIcon" Glyph="&#xE90F;" FontSize="18" FontWeight="SemiBold"/>
                         </NavigationViewItem.Icon>
                     </NavigationViewItem>
-
-                    <NavigationViewItem x:Uid="Nav_Query" Tag="query">
+                    <NavigationViewItem x:Name="QueryNavItem" x:Uid="Nav_Query" Tag="query">
                         <NavigationViewItem.Icon>
-                            <FontIcon Glyph="&#xE721;"/>
+                            <FontIcon x:Name="QueryIcon" Glyph="&#xE721;" FontSize="18" FontWeight="SemiBold"/>
                         </NavigationViewItem.Icon>
                     </NavigationViewItem>
-
-                    <NavigationViewItem x:Uid="Nav_Reset" Tag="reset">
+                    <NavigationViewItem x:Name="ResetNavItem" x:Uid="Nav_Reset" Tag="reset">
                         <NavigationViewItem.Icon>
-                            <FontIcon Glyph="&#xE777;"/>
+                            <FontIcon x:Name="ResetIcon" Glyph="&#xE777;" FontSize="18" FontWeight="SemiBold"/>
                         </NavigationViewItem.Icon>
                     </NavigationViewItem>
                 </NavigationView.MenuItems>
-
+                <NavigationView.FooterMenuItems>
+                    <NavigationViewItem x:Name="SettingsNavItem" x:Uid="SettingsItem" Tag="settings">
+                        <NavigationViewItem.Icon>
+                            <AnimatedIcon x:Name="SettingsAnimatedIcon">
+                                <AnimatedIcon.Source>
+                                    <animatedvisuals:AnimatedSettingsVisualSource xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"/>
+                                </AnimatedIcon.Source>
+                                <AnimatedIcon.FallbackIconSource>
+                                    <FontIconSource Glyph="&#xE713;" FontSize="18" FontWeight="SemiBold"/>
+                                </AnimatedIcon.FallbackIconSource>
+                            </AnimatedIcon>
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </NavigationView.FooterMenuItems>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-
                     <StackPanel x:Name="BreadcrumbPanel"
                                 Grid.Row="0"
                                 Orientation="Horizontal"
@@ -57,91 +114,35 @@
                             </BreadcrumbBar.ItemTemplate>
                         </BreadcrumbBar>
                     </StackPanel>
-
-                    <Frame x:Name="ContentFrame" Grid.Row="1"/>
+                    <Frame x:Name="ContentFrame" Grid.Row="1">
+                        <Frame.ContentTransitions>
+                            <TransitionCollection>
+                                <NavigationThemeTransition />
+                            </TransitionCollection>
+                        </Frame.ContentTransitions>
+                    </Frame>
                 </Grid>
             </NavigationView>
         </Grid>
-
-        <Border x:Name="CommonLoadingOverlay"
-                Background="#66000000"
-                Visibility="Collapsed"
-                Canvas.ZIndex="10">
-            <StackPanel HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Spacing="16">
-                <ProgressRing IsActive="True"
-                              Width="60"
-                              Height="60"/>
-                <TextBlock x:Name="CommonLoadingText"
-                           Text="Loading..."
-                           HorizontalAlignment="Center"
-                           FontSize="14"
-                           Opacity="0.8"/>
+        <!-- 5. 加载遮罩 -->
+        <Border x:Name="CommonLoadingOverlay" Background="#66000000" Visibility="Collapsed" Canvas.ZIndex="10">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                <ProgressRing IsActive="True" Width="60" Height="60"/>
+                <TextBlock x:Name="CommonLoadingText" Text="Loading..." HorizontalAlignment="Center" FontSize="14" Opacity="0.8"/>
             </StackPanel>
         </Border>
-
-        <Grid x:Name="WindowTitleBar"
-              Height="32"
-              VerticalAlignment="Top"
-              Canvas.ZIndex="20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <Image x:Name="ImgAppIcon"
-                   Width="16"
-                   Height="16"
-                   VerticalAlignment="Center"
-                   Margin="16,0,8,0"
-                   Grid.Column="0"/>
-
-            <TitleBar x:Name="TitleBarArea"
-                      Grid.Column="1"
-                      Height="48"
-                      Background="Transparent"
-                      VerticalAlignment="Center">
-                <TitleBar.LeftHeader>
-                    <StackPanel x:Name="TitleBarContent"
-                                Orientation="Horizontal"
-                                VerticalAlignment="Center"
-                                Margin="0,0">
-                        <TextBlock x:Name="TitleBarAppName"
-                                   VerticalAlignment="Center"
-                                   FontSize="12"/>
-                        <TextBlock x:Uid="SettingsTitle"
-                                   FontSize="14"
-                                   FontWeight="SemiBold"
-                                   Margin="0,3,0,0"/>
-                    </StackPanel>
-                </TitleBar.LeftHeader>
-            </TitleBar>
-        </Grid>
-
-        <Grid x:Name="SplashOverlay"
-              Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-              Visibility="Visible"
-              Opacity="1"
-              Canvas.ZIndex="30">
+        <!-- 6. Splash 动画层 -->
+        <Grid x:Name="SplashOverlay" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Visibility="Visible" Opacity="1" Canvas.ZIndex="30">
             <Grid.Resources>
                 <Storyboard x:Name="SplashFadeOut">
-                    <DoubleAnimation Storyboard.TargetName="SplashOverlay"
-                                     Storyboard.TargetProperty="Opacity"
-                                     From="1"
-                                     To="0"
-                                     Duration="0:0:0.15">
+                    <DoubleAnimation Storyboard.TargetName="SplashOverlay" Storyboard.TargetProperty="Opacity" From="1" To="0" Duration="0:0:0.15">
                         <DoubleAnimation.EasingFunction>
                             <CubicEase EasingMode="EaseIn"/>
                         </DoubleAnimation.EasingFunction>
                     </DoubleAnimation>
                 </Storyboard>
             </Grid.Resources>
-
-            <Image Source="ms-appx:///Assets/SplashScreen.png"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   Stretch="None"/>
+            <Image Source="ms-appx:///Assets/SplashScreen.png" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None"/>
         </Grid>
     </Grid>
 </Window>

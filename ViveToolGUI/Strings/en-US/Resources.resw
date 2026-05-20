@@ -339,6 +339,9 @@
   <data name="Settings_Breadcrumb" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="SettingsItem.Content" xml:space="preserve">
+    <value>Settings</value>
+  </data>
   <data name="Dialog_ErrorTitle" xml:space="preserve">
     <value>Error</value>
   </data>
@@ -440,9 +443,6 @@
   </data>
   <data name="History_HeaderTime.Text" xml:space="preserve">
     <value>Time</value>
-  </data>
-  <data name=".Text" xml:space="preserve">
-    <value>Delete</value>
   </data>
   <data name="Menu_HistoryDelete.Text" xml:space="preserve">
     <value>Delete this history</value>

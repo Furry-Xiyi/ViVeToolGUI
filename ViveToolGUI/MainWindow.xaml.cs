@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.ApplicationModel.Resources;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -37,6 +38,19 @@ namespace ViVeToolGUI
         private static readonly uint WM_TASKBARBUTTONCREATED = RegisterWindowMessage("TaskbarButtonCreated");
         private CancellationTokenSource _taskbarAutoClearCts;
         public bool IsWindowActivated { get; private set; } = true;
+        private static readonly Dictionary<string, string> _normalGlyphs = new()
+        {
+            { "enableDisable", "\uE90F" },
+            { "query", "\uE721" },
+            { "reset", "\uE777" }
+        };
+
+        private static readonly Dictionary<string, string> _selectedGlyphs = new()
+        {
+            { "enableDisable", "\uE90F" },
+            { "query", "\uF78B" },
+            { "reset", "\uE777" }
+        };
 
         public async void OpenExternalLink(object sender, RoutedEventArgs e)
         {
@@ -69,10 +83,13 @@ namespace ViVeToolGUI
             if (Content is FrameworkElement root)
                 root.RequestedTheme = AppThemeManager.CurrentTheme;
 
+            // -------- 照搬 XiyiDownload：开启沉浸式标题栏并设置加高模式 --------
+            ExtendsContentIntoTitleBar = true;
+            this.AppWindow.TitleBar.PreferredHeightOption = Microsoft.UI.Windowing.TitleBarHeightOption.Tall;
             this.SetTitleBar(TitleBarArea);
+            // ----------------------------------------------------------------
 
             ContentFrame.Navigated += ContentFrame_Navigated;
-
             this.Activated += MainWindow_Activated;
             this.Closed += MainWindow_Closed;
 
@@ -213,35 +230,85 @@ namespace ViVeToolGUI
                 "enableDisable" => typeof(EnableDisablePage),
                 "query" => typeof(QueryPage),
                 "reset" => typeof(ResetPage),
+                "settings" => typeof(SettingsPage),
                 _ => null
             };
         }
 
-        private void NavigateByTag(string tag)
+        private void NavigateByTag(string tag, Microsoft.UI.Xaml.Media.Animation.NavigationTransitionInfo transitionInfo = null)
         {
             var pageType = TagToPageType(tag);
             if (pageType != null && ContentFrame.CurrentSourcePageType != pageType)
-                ContentFrame.Navigate(pageType);
+            {
+                ContentFrame.Navigate(pageType, null, transitionInfo ?? new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
+            }
         }
 
         private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
-            if (args.IsSettingsInvoked)
-            {
-                if (ContentFrame.CurrentSourcePageType != typeof(SettingsPage))
-                    ContentFrame.Navigate(typeof(SettingsPage));
-
-                return;
-            }
-
             string tag = args.InvokedItemContainer?.Tag?.ToString();
-            NavigateByTag(tag);
+            NavigateByTag(tag, args.RecommendedNavigationTransitionInfo);
         }
 
-        private void NavView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+        private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            if (ContentFrame.CanGoBack)
-                ContentFrame.GoBack();
+            var selectedItem = args.SelectedItemContainer as NavigationViewItem;
+            UpdateNavItemIcons(selectedItem);
+        }
+
+        private async void UpdateNavItemIcons(NavigationViewItem selectedContainer)
+        {
+            foreach (var item in NavView.MenuItems.OfType<NavigationViewItem>())
+            {
+                string tag = item.Tag?.ToString();
+                if (tag == null) continue;
+                bool isSelected = item == selectedContainer;
+                if (item.Icon is FontIcon fontIcon)
+                {
+                    fontIcon.Glyph = isSelected
+                        ? _selectedGlyphs.GetValueOrDefault(tag, fontIcon.Glyph)
+                        : _normalGlyphs.GetValueOrDefault(tag, fontIcon.Glyph);
+                }
+            }
+            bool settingsSelected = SettingsNavItem == selectedContainer;
+            if (settingsSelected)
+            {
+                if (SettingsNavItem.Icon is AnimatedIcon animIcon)
+                {
+                    AnimatedIcon.SetState(animIcon, "Selected");
+                    await Task.Delay(600);
+                    if (NavView.SelectedItem == SettingsNavItem)
+                    {
+                        SettingsNavItem.Icon = new FontIcon
+                        {
+                            Glyph = "\uF8B0",
+                            FontSize = 18,
+                            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
+                        };
+                    }
+                }
+            }
+            else
+            {
+                if (SettingsNavItem.Icon is not AnimatedIcon)
+                {
+                    SettingsNavItem.Icon = new AnimatedIcon
+                    {
+                        Source = new Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedSettingsVisualSource(),
+                        FallbackIconSource = new FontIconSource { Glyph = "\uE713" }
+                    };
+                }
+            }
+        }
+
+        private void TitleBar_BackRequested(TitleBar sender, object args)
+        {
+            if (ContentFrame.CanGoBack) ContentFrame.GoBack();
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ContentFrame.CanGoBack) ContentFrame.GoBack();
         }
 
         private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
@@ -249,19 +316,39 @@ namespace ViVeToolGUI
             UpdateBackButton();
             UpdateSelectedNavItem(e.SourcePageType);
             UpdateBreadcrumb(e.SourcePageType);
+            UpdateIconMargin();
         }
 
-        private void UpdateBackButton() =>
-            NavView.IsBackEnabled = ContentFrame.CanGoBack;
+        private void UpdateBackButton()
+        {
+            BackButton.Visibility = ContentFrame.CanGoBack ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void UpdateIconMargin()
+        {
+            var targetImgMargin = ContentFrame.CanGoBack
+                ? new Thickness(50, 16, 0, 0)
+                : new Thickness(18, 16, 0, 0);
+            var targetTitleMargin = ContentFrame.CanGoBack
+                ? new Thickness(50, 0, 0, 0)
+                : new Thickness(18, 0, 0, 0);
+            if (!ImgAppIcon.Margin.Equals(targetImgMargin) || !TitleBarArea.Margin.Equals(targetTitleMargin))
+            {
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    ImgAppIcon.Margin = targetImgMargin;
+                    TitleBarArea.Margin = targetTitleMargin;
+                });
+            }
+        }
 
         private void UpdateSelectedNavItem(Type pageType)
         {
             if (pageType == typeof(SettingsPage))
             {
-                NavView.SelectedItem = NavView.SettingsItem;
+                NavView.SelectedItem = SettingsNavItem;
                 return;
             }
-
             foreach (var item in NavView.MenuItems.OfType<NavigationViewItem>())
             {
                 string tag = item.Tag?.ToString();
@@ -376,6 +463,9 @@ namespace ViVeToolGUI
                 }
             }
             catch { }
+
+            Application.Current.Exit();
+            Environment.Exit(0);
         }
 
         public static async Task<CommandResult> ExecuteViVeToolCommandAsync(string arguments)
@@ -696,10 +786,9 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
         {
             TitleBarAppName.Text = Package.Current.DisplayName;
             ImgAppIcon.Source = new BitmapImage(Package.Current.Logo);
-
             ApplySettings();
             UpdateBackButton();
-
+            UpdateIconMargin();
             if (Content is FrameworkElement root)
             {
                 root.ActualThemeChanged -= AppThemeManager.OnActualThemeChanged;
@@ -712,13 +801,24 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
             try
             {
                 string position = localSettings.Values["PanePosition"] as string ?? "Left";
-
                 if (localSettings.Values["PanePosition"] == null)
                     localSettings.Values["PanePosition"] = "Left";
-
-                NavView.PaneDisplayMode = position == "Top"
-                    ? NavigationViewPaneDisplayMode.Top
-                    : NavigationViewPaneDisplayMode.LeftCompact;
+                if (position == "Top")
+                {
+                    NavView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+                    NavView.IsPaneToggleButtonVisible = false;
+                    NavView.OpenPaneLength = 0;
+                    NavView.CompactPaneLength = 0;
+                    NavViewContainer.Margin = new Thickness(0, 48, 0, 0);
+                }
+                else
+                {
+                    NavView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                    NavView.IsPaneToggleButtonVisible = false;
+                    NavView.OpenPaneLength = 72;
+                    NavView.CompactPaneLength = 72;
+                    NavViewContainer.Margin = new Thickness(0, 48, 0, 0);
+                }
             }
             catch (Exception ex)
             {

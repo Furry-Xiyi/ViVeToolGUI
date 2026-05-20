@@ -6,7 +6,10 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="ms-appx:///Styles/NavigationView.Themeresources.xaml"/>
+                <ResourceDictionary Source="ms-appx:///Styles/NavigationView.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
+
 </Application>

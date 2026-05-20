@@ -339,6 +339,9 @@
   <data name="Settings_Breadcrumb" xml:space="preserve">
     <value>设置</value>
   </data>
+  <data name="SettingsItem.Content" xml:space="preserve">
+    <value>设置</value>
+  </data>
   <data name="Dialog_ErrorTitle" xml:space="preserve">
     <value>错误</value>
   </data>
