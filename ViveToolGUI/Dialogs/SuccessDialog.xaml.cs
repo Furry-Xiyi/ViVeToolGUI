@@ -34,17 +34,10 @@ namespace ViVeToolGUI.Dialogs
 
             try
             {
-                var folder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(_path);
-                await Windows.System.Launcher.LaunchFolderAsync(folder);
+                var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(_path);
+                await Windows.System.Launcher.LaunchFileAsync(file);
             }
-            catch
-            {
-                try
-                {
-                    await Windows.System.Launcher.LaunchUriAsync(new Uri(_path));
-                }
-                catch { }
-            }
+            catch { }
         }
     }
 }

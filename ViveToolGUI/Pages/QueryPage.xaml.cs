@@ -385,17 +385,12 @@ namespace ViVeToolGUI.Pages
 
                 await FileIO.WriteTextAsync(file, sb.ToString());
 
-                // 2. 导出完成后显示 ExternalOpenDialog
-                var openDialog = new Dialogs.ExternalOpenDialog();
+                // 2. 导出完成后显示 SuccessDialog
+                var openDialog = new Dialogs.SuccessDialog(
+    _resourceLoader.GetString("Export_Success"),
+    file.Path);
                 openDialog.XamlRoot = this.XamlRoot;
-
-                // 由于 ExternalOpenDialog 不得硬编码，这里可设置通用Uid完成提示，如需动态传入路径，可在后台设置其Content绑定
                 await openDialog.ShowAsync();
-
-                if (openDialog.UserConfirmed)
-                {
-                    await Launcher.LaunchFileAsync(file);
-                }
             }
             catch (Exception ex)
             {
