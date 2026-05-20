@@ -15,7 +15,7 @@
                 <NavigationView.MenuItems>
                     <NavigationViewItem x:Uid="Nav_EnableDisable" Tag="enableDisable">
                         <NavigationViewItem.Icon>
-                            <FontIcon Glyph="&#xE7C3;"/>
+                            <FontIcon Glyph="&#xE90F;"/>
                         </NavigationViewItem.Icon>
                     </NavigationViewItem>
 
