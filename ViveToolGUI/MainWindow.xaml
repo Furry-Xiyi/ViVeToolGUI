@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Grid>
-        <!-- 1. 自定义返回按钮 -->
         <Button x:Name="BackButton"
                 x:Uid="BackButton"
                 VerticalAlignment="Top" HorizontalAlignment="Left"
@@ -14,12 +13,11 @@
                 Style="{ThemeResource TitleBarBackButtonStyle}"
                 Visibility="Collapsed"
                 Click="BackButton_Click"
-                Canvas.ZIndex="20"/>
-        <!-- 2. 应用图标 -->
+                Canvas.ZIndex="1"/>
+
         <Image x:Name="ImgAppIcon" Width="16" Height="16" VerticalAlignment="Top" HorizontalAlignment="Left"
                Margin="18,16,0,0" IsHitTestVisible="False" Canvas.ZIndex="20"/>
 
-        <!-- 3. 自定义标题栏 -->
         <TitleBar x:Name="TitleBarArea" VerticalAlignment="Top"
                   Margin="18,0,0,0"
                   IsBackButtonVisible="False"
@@ -33,7 +31,6 @@
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
                             Margin="28,0,0,0">
-                    <!-- 新增左边距，为外部跟随位移的 Image 留出空间 -->
                     <TextBlock x:Name="TitleBarAppName"
                                VerticalAlignment="Center"
                                FontSize="12"/>
@@ -45,17 +42,13 @@
                 </StackPanel>
             </TitleBar.LeftHeader>
         </TitleBar>
-        <!-- 4. 导航栏 (照搬无边框设计) -->
+
         <Grid x:Name="NavViewContainer" Margin="0,32,0,0" Canvas.ZIndex="0">
             <NavigationView x:Name="NavView"
                             PaneDisplayMode="LeftCompact"
-                            IsSettingsVisible="False"
+                            IsSettingsVisible="True"
                             IsBackButtonVisible="Collapsed"
                             IsPaneToggleButtonVisible="False"
-                            OpenPaneLength="72"
-                            CompactModeThresholdWidth="0"
-                            ExpandedModeThresholdWidth="0"
-                            CompactPaneLength="72"
                             SelectionChanged="NavView_SelectionChanged"
                             ItemInvoked="NavView_ItemInvoked">
 
@@ -76,20 +69,7 @@
                         </NavigationViewItem.Icon>
                     </NavigationViewItem>
                 </NavigationView.MenuItems>
-                <NavigationView.FooterMenuItems>
-                    <NavigationViewItem x:Name="SettingsNavItem" x:Uid="SettingsItem" Tag="settings">
-                        <NavigationViewItem.Icon>
-                            <AnimatedIcon x:Name="SettingsAnimatedIcon">
-                                <AnimatedIcon.Source>
-                                    <animatedvisuals:AnimatedSettingsVisualSource xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"/>
-                                </AnimatedIcon.Source>
-                                <AnimatedIcon.FallbackIconSource>
-                                    <FontIconSource Glyph="&#xE713;" FontSize="18" FontWeight="SemiBold"/>
-                                </AnimatedIcon.FallbackIconSource>
-                            </AnimatedIcon>
-                        </NavigationViewItem.Icon>
-                    </NavigationViewItem>
-                </NavigationView.FooterMenuItems>
+
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -124,14 +104,14 @@
                 </Grid>
             </NavigationView>
         </Grid>
-        <!-- 5. 加载遮罩 -->
+
         <Border x:Name="CommonLoadingOverlay" Background="#66000000" Visibility="Collapsed" Canvas.ZIndex="10">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
                 <ProgressRing IsActive="True" Width="60" Height="60"/>
                 <TextBlock x:Name="CommonLoadingText" Text="Loading..." HorizontalAlignment="Center" FontSize="14" Opacity="0.8"/>
             </StackPanel>
         </Border>
-        <!-- 6. Splash 动画层 -->
+
         <Grid x:Name="SplashOverlay" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Visibility="Visible" Opacity="1" Canvas.ZIndex="30">
             <Grid.Resources>
                 <Storyboard x:Name="SplashFadeOut">

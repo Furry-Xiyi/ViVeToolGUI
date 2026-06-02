@@ -242,15 +242,15 @@ namespace ViVeToolGUI.Pages
                 switch (_variantMode)
                 {
                     case "Default":
-                        arguments += " /variant:default";
+                        arguments += " variant:default";
                         break;
                     case "Clear":
-                        arguments += " /variant:clear";
+                        arguments += " variant:clear";
                         break;
                     case "Custom":
                         int variant = (int)VariantNumberBox.Value;
                         if (variant > 0)
-                            arguments += $" /variant:{variant}";
+                            arguments += $" variant:{variant}";
                         break;
                 }
 

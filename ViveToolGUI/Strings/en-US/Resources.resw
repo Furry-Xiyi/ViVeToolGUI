@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppDisplayName" xml:space="preserve">
-    <value>Xiyi ViVeTool GUI</value>
+    <value>ViVeTool GUI</value>
   </data>
   <data name="Nav_EnableDisable.Content" xml:space="preserve">
     <value>Enable/Disable</value>
@@ -381,9 +381,6 @@
   <data name="Dialog_ExportOptions_OptionJson.Content" xml:space="preserve">
     <value>Export JSON</value>
   </data>
-  <data name="Dialog_AdminRequiredTitle" xml:space="preserve">
-    <value>Administrator privileges required</value>
-  </data>
   <data name="Dialog_AdminRequired.Title" xml:space="preserve">
     <value>Administrator privileges required</value>
   </data>
@@ -446,5 +443,23 @@
   </data>
   <data name="Menu_HistoryDelete.Text" xml:space="preserve">
     <value>Delete this history</value>
+  </data>
+  <data name="Dialog_Disclaimer.Title" xml:space="preserve">
+    <value>Instructions for Use</value>
+  </data>
+  <data name="Dialog_Disclaimer.PrimaryButtonText" xml:space="preserve">
+    <value>Continue using</value>
+  </data>
+  <data name="Dialog_Disclaimer.CloseButtonText" xml:space="preserve">
+    <value>Exit Application</value>
+  </data>
+  <data name="Dialog_Disclaimer_Body.Text" xml:space="preserve">
+    <value>This application is an unofficial GUI version of ViVeTool and is not associated with the official ViVeTool version. Continuing to use it indicates that you are aware of this information.</value>
+  </data>
+  <data name="Dialog_Disclaimer_DoNotShow.Content" xml:space="preserve">
+    <value>Do not show again</value>
+  </data>
+  <data name="BackButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Back</value>
   </data>
 </root>

@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppDisplayName" xml:space="preserve">
-    <value>惜忆 ViVeTool 图形界面</value>
+    <value>ViVeTool 图形界面</value>
   </data>
   <data name="Nav_EnableDisable.Content" xml:space="preserve">
     <value>启用/禁用</value>
@@ -381,9 +381,6 @@
   <data name="Dialog_ExportOptions_OptionJson.Content" xml:space="preserve">
     <value>导出 JSON</value>
   </data>
-  <data name="Dialog_AdminRequiredTitle" xml:space="preserve">
-    <value>需要管理员权限</value>
-  </data>
   <data name="Dialog_AdminRequired.Title" xml:space="preserve">
     <value>需要管理员权限</value>
   </data>
@@ -446,5 +443,23 @@
   </data>
   <data name="Menu_HistoryDelete.Text" xml:space="preserve">
     <value>删除此条历史</value>
+  </data>
+  <data name="Dialog_Disclaimer.Title" xml:space="preserve">
+    <value>使用须知</value>
+  </data>
+  <data name="Dialog_Disclaimer.PrimaryButtonText" xml:space="preserve">
+    <value>继续使用</value>
+  </data>
+  <data name="Dialog_Disclaimer.CloseButtonText" xml:space="preserve">
+    <value>退出应用</value>
+  </data>
+  <data name="Dialog_Disclaimer_Body.Text" xml:space="preserve">
+    <value>本应用为 ViVeTool 的非官方 GUI 版本，与 ViVeTool 官方版本无关联。继续使用即表明您已了解此信息。</value>
+  </data>
+  <data name="Dialog_Disclaimer_DoNotShow.Content" xml:space="preserve">
+    <value>不再提示</value>
+  </data>
+  <data name="BackButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>返回</value>
   </data>
 </root>

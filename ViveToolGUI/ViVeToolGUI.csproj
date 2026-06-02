@@ -55,6 +55,7 @@
 
   <ItemGroup>
     <None Remove="AppWindows\TextFileViewerWindow.xaml" />
+    <None Remove="Dialogs\DisclaimerDialog.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -73,6 +74,9 @@
     <None Update="Assets\AppIcon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Dialogs\DisclaimerDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="Strings\en-US\Features.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

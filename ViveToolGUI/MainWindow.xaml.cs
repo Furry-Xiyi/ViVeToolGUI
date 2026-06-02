@@ -38,6 +38,8 @@ namespace ViVeToolGUI
         private static readonly uint WM_TASKBARBUTTONCREATED = RegisterWindowMessage("TaskbarButtonCreated");
         private CancellationTokenSource _taskbarAutoClearCts;
         public bool IsWindowActivated { get; private set; } = true;
+
+        // 图标字典
         private static readonly Dictionary<string, string> _normalGlyphs = new()
         {
             { "enableDisable", "\uE90F" },
@@ -83,11 +85,9 @@ namespace ViVeToolGUI
             if (Content is FrameworkElement root)
                 root.RequestedTheme = AppThemeManager.CurrentTheme;
 
-            // -------- 照搬 XiyiDownload：开启沉浸式标题栏并设置加高模式 --------
             ExtendsContentIntoTitleBar = true;
             this.AppWindow.TitleBar.PreferredHeightOption = Microsoft.UI.Windowing.TitleBarHeightOption.Tall;
             this.SetTitleBar(TitleBarArea);
-            // ----------------------------------------------------------------
 
             ContentFrame.Navigated += ContentFrame_Navigated;
             this.Activated += MainWindow_Activated;
@@ -130,7 +130,6 @@ namespace ViVeToolGUI
         public async void ShowTaskbarError(int autoClearMilliseconds = 3500)
         {
             CancelTaskbarAutoClear();
-
             SetProgressError();
 
             if (autoClearMilliseconds > 0)
@@ -141,20 +140,16 @@ namespace ViVeToolGUI
                 try
                 {
                     await Task.Delay(autoClearMilliseconds, token);
-
                     if (!token.IsCancellationRequested)
                         ClearProgress();
                 }
-                catch (TaskCanceledException)
-                {
-                }
+                catch (TaskCanceledException) { }
             }
         }
 
         public async void ShowTaskbarCompleted(int autoClearMilliseconds = 1200)
         {
             CancelTaskbarAutoClear();
-
             SetProgressCompleted();
             FlashTaskbarButton();
 
@@ -166,13 +161,10 @@ namespace ViVeToolGUI
                 try
                 {
                     await Task.Delay(autoClearMilliseconds, token);
-
                     if (!token.IsCancellationRequested)
                         ClearProgress();
                 }
-                catch (TaskCanceledException)
-                {
-                }
+                catch (TaskCanceledException) { }
             }
         }
 
@@ -189,10 +181,7 @@ namespace ViVeToolGUI
                 _taskbarAutoClearCts?.Cancel();
                 _taskbarAutoClearCts?.Dispose();
             }
-            catch
-            {
-            }
-
+            catch { }
             _taskbarAutoClearCts = null;
         }
 
@@ -246,6 +235,17 @@ namespace ViVeToolGUI
 
         private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
+            if (args.IsSettingsInvoked)
+            {
+                // 如果已经选中了设置，又点了一次：再次触发实心旋转动画
+                if (NavView.SelectedItem == NavView.SettingsItem)
+                {
+                    PlaySolidSettingsSpinAnimation((NavigationViewItem)NavView.SettingsItem);
+                }
+                if (ContentFrame.CurrentSourcePageType != typeof(SettingsPage))
+                    ContentFrame.Navigate(typeof(SettingsPage), null, args.RecommendedNavigationTransitionInfo);
+                return;
+            }
             string tag = args.InvokedItemContainer?.Tag?.ToString();
             NavigateByTag(tag, args.RecommendedNavigationTransitionInfo);
         }
@@ -253,16 +253,12 @@ namespace ViVeToolGUI
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             var selectedItem = args.SelectedItemContainer as NavigationViewItem;
-            UpdateNavItemIcons(selectedItem);
-        }
-
-        private async void UpdateNavItemIcons(NavigationViewItem selectedContainer)
-        {
+            // 1. 常规项图标（实心/空心切换）
             foreach (var item in NavView.MenuItems.OfType<NavigationViewItem>())
             {
                 string tag = item.Tag?.ToString();
-                if (tag == null) continue;
-                bool isSelected = item == selectedContainer;
+                if (string.IsNullOrEmpty(tag)) continue;
+                bool isSelected = item == selectedItem;
                 if (item.Icon is FontIcon fontIcon)
                 {
                     fontIcon.Glyph = isSelected
@@ -270,35 +266,71 @@ namespace ViVeToolGUI
                         : _normalGlyphs.GetValueOrDefault(tag, fontIcon.Glyph);
                 }
             }
-            bool settingsSelected = SettingsNavItem == selectedContainer;
-            if (settingsSelected)
+            // 2. 自带的 Settings 实心旋转逻辑
+            var settingsItem = (NavigationViewItem)NavView.SettingsItem;
+            if (settingsItem != null)
             {
-                if (SettingsNavItem.Icon is AnimatedIcon animIcon)
+                if (args.IsSettingsSelected)
                 {
-                    AnimatedIcon.SetState(animIcon, "Selected");
-                    await Task.Delay(600);
-                    if (NavView.SelectedItem == SettingsNavItem)
+                    // 切到设置页，变成实心并播放自制旋转动画
+                    PlaySolidSettingsSpinAnimation(settingsItem);
+                }
+                else
+                {
+                    // 切走时强制还原为自带的空心动画图标，保证未选中时悬浮(Hover)有原版动画
+                    if (settingsItem.Icon is not AnimatedIcon)
                     {
-                        SettingsNavItem.Icon = new FontIcon
+                        settingsItem.Icon = new AnimatedIcon
                         {
-                            Glyph = "\uF8B0",
-                            FontSize = 18,
-                            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
+                            Source = new Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedSettingsVisualSource(),
+                            FallbackIconSource = new FontIconSource { Glyph = "\uE713" } // 空心齿轮
                         };
                     }
                 }
             }
-            else
+        }
+
+        private void PlaySolidSettingsSpinAnimation(NavigationViewItem settingsItem)
+        {
+            if (settingsItem == null) return;
+            // 设置为实心 FontIcon 并赋予中心旋转变换特性
+            var fontIcon = settingsItem.Icon as FontIcon;
+            if (fontIcon == null || fontIcon.Glyph != "\uF8B0")
             {
-                if (SettingsNavItem.Icon is not AnimatedIcon)
+                fontIcon = new FontIcon
                 {
-                    SettingsNavItem.Icon = new AnimatedIcon
-                    {
-                        Source = new Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedSettingsVisualSource(),
-                        FallbackIconSource = new FontIconSource { Glyph = "\uE713" }
-                    };
-                }
+                    Glyph = "\uF8B0", // 实心齿轮
+                    FontSize = 18,
+                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                    RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5),
+                    RenderTransform = new Microsoft.UI.Xaml.Media.RotateTransform()
+                };
+                settingsItem.Icon = fontIcon;
             }
+            // 获取或初始化 RotateTransform
+            if (fontIcon.RenderTransform is not Microsoft.UI.Xaml.Media.RotateTransform rotateTransform)
+            {
+                rotateTransform = new Microsoft.UI.Xaml.Media.RotateTransform();
+                fontIcon.RenderTransform = rotateTransform;
+                fontIcon.RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5);
+            }
+            // 创建动画：转动 60 度，配合 CubicEase 模拟原版的减速物理手感
+            var sb = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
+            var anim = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+            {
+                From = 0,
+                To = 60,
+                Duration = new Duration(TimeSpan.FromMilliseconds(400)),
+                EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase
+                {
+                    EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut
+                }
+            };
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(anim, rotateTransform);
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(anim, "Angle");
+
+            sb.Children.Add(anim);
+            sb.Begin();
         }
 
         private void TitleBar_BackRequested(TitleBar sender, object args)
@@ -332,6 +364,7 @@ namespace ViVeToolGUI
             var targetTitleMargin = ContentFrame.CanGoBack
                 ? new Thickness(50, 0, 0, 0)
                 : new Thickness(18, 0, 0, 0);
+
             if (!ImgAppIcon.Margin.Equals(targetImgMargin) || !TitleBarArea.Margin.Equals(targetTitleMargin))
             {
                 this.DispatcherQueue.TryEnqueue(() =>
@@ -346,9 +379,10 @@ namespace ViVeToolGUI
         {
             if (pageType == typeof(SettingsPage))
             {
-                NavView.SelectedItem = SettingsNavItem;
+                NavView.SelectedItem = NavView.SettingsItem;
                 return;
             }
+
             foreach (var item in NavView.MenuItems.OfType<NavigationViewItem>())
             {
                 string tag = item.Tag?.ToString();
@@ -362,7 +396,17 @@ namespace ViVeToolGUI
 
         private void UpdateBreadcrumb(Type pageType)
         {
+            if (pageType == null) return;
             BreadcrumbItems.Clear();
+
+            string position = localSettings.Values["PanePosition"] as string ?? "Left";
+
+            // 【新增需求】：顶部模式下，除了设置页外的其他页面全部隐藏面包屑栏
+            if (position == "Top" && pageType != typeof(SettingsPage))
+            {
+                BreadcrumbPanel.Visibility = Visibility.Collapsed;
+                return;
+            }
 
             if (pageType == typeof(EnableDisablePage))
                 BreadcrumbItems.Add(_loader.GetString("EnableDisable_Breadcrumb"));
@@ -419,7 +463,7 @@ namespace ViVeToolGUI
         {
             await Task.Delay(500);
 
-            SplashFadeOut.Completed += (s, e) =>
+            SplashFadeOut.Completed += async (s, e) =>
             {
                 SplashOverlay.Visibility = Visibility.Collapsed;
 
@@ -427,6 +471,19 @@ namespace ViVeToolGUI
                 ElementSoundPlayer.State = sound
                     ? ElementSoundPlayerState.On
                     : ElementSoundPlayerState.Off;
+
+                bool accepted = localSettings.Values["DisclaimerAccepted"] is bool v && v;
+                if (!accepted)
+                {
+                    var dialog = new Dialogs.DisclaimerDialog();
+                    dialog.XamlRoot = this.Content.XamlRoot;
+                    var result = await dialog.ShowAsync();
+
+                    if (result != ContentDialogResult.Primary)
+                    {
+                        Application.Current.Exit();
+                    }
+                }
             };
 
             SplashFadeOut.Begin();
@@ -434,14 +491,7 @@ namespace ViVeToolGUI
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
         {
-            try
-            {
-                ClearTaskbarProgress();
-            }
-            catch
-            {
-            }
-
+            try { ClearTaskbarProgress(); } catch { }
             try
             {
                 string tempDir = Path.Combine(
@@ -452,14 +502,10 @@ namespace ViVeToolGUI
                 if (Directory.Exists(tempDir))
                 {
                     foreach (var file in Directory.GetFiles(tempDir, "vivetool_*.txt"))
-                    {
                         try { File.Delete(file); } catch { }
-                    }
 
                     foreach (var file in Directory.GetFiles(tempDir, "vivetool_*.bat"))
-                    {
                         try { File.Delete(file); } catch { }
-                    }
                 }
             }
             catch { }
@@ -476,23 +522,13 @@ namespace ViVeToolGUI
             {
                 if (!await App.EnsureViVeToolInitializedAsync())
                 {
-                    return new CommandResult
-                    {
-                        ExitCode = -1,
-                        Output = "",
-                        Error = "ViVeTool initialization failed."
-                    };
+                    return new CommandResult { ExitCode = -1, Output = "", Error = "ViVeTool initialization failed." };
                 }
 
                 if (string.IsNullOrEmpty(App.ViVeToolPath) || !File.Exists(App.ViVeToolPath))
                 {
                     Debug.WriteLine($"[ExecuteViVeTool] ERROR: ViVeTool.exe not found at: {App.ViVeToolPath}");
-                    return new CommandResult
-                    {
-                        ExitCode = -1,
-                        Output = "",
-                        Error = "ViVeTool.exe not found. Please restart the application."
-                    };
+                    return new CommandResult { ExitCode = -1, Output = "", Error = "ViVeTool.exe not found. Please restart the application." };
                 }
 
                 string vivetoolDir = Path.GetDirectoryName(App.ViVeToolPath);
@@ -504,11 +540,7 @@ namespace ViVeToolGUI
                 Debug.WriteLine($"[ExecuteViVeTool] ViVeToolPath: {App.ViVeToolPath}");
                 Debug.WriteLine($"[ExecuteViVeTool] Arguments: {arguments}");
 
-                string tempDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                    "ViVeToolGUI",
-                    "Temp");
-
+                string tempDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "ViVeToolGUI", "Temp");
                 Directory.CreateDirectory(tempDir);
 
                 string outputFile = Path.Combine(tempDir, $"vivetool_{Guid.NewGuid():N}.txt");
@@ -519,7 +551,6 @@ cd /d ""{vivetoolDir}""
 ""{App.ViVeToolPath}"" {arguments} > ""{outputFile}"" 2>&1
 echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
 ";
-
                 await File.WriteAllTextAsync(batchFile, batchContent, Encoding.UTF8);
 
                 var psi = new ProcessStartInfo
@@ -537,17 +568,10 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
                 try
                 {
                     using var proc = Process.Start(psi);
-
                     if (proc == null)
                     {
                         try { File.Delete(batchFile); } catch { }
-
-                        return new CommandResult
-                        {
-                            ExitCode = -1,
-                            Output = "",
-                            Error = "Failed to start elevated process."
-                        };
+                        return new CommandResult { ExitCode = -1, Output = "", Error = "Failed to start elevated process." };
                     }
 
                     await Task.Run(() =>
@@ -559,19 +583,11 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
                 catch (System.ComponentModel.Win32Exception ex)
                 {
                     Debug.WriteLine($"[ExecuteViVeTool] User cancelled UAC: {ex.Message}");
-
                     try { File.Delete(batchFile); } catch { }
-
-                    return new CommandResult
-                    {
-                        ExitCode = -1,
-                        Output = "",
-                        Error = "User cancelled UAC elevation."
-                    };
+                    return new CommandResult { ExitCode = -1, Output = "", Error = "User cancelled UAC elevation." };
                 }
 
                 await Task.Delay(1000);
-
                 string output = "";
 
                 for (int i = 0; i < 5; i++)
@@ -581,7 +597,6 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
                         if (File.Exists(outputFile))
                         {
                             output = await File.ReadAllTextAsync(outputFile, Encoding.UTF8);
-
                             if (output.Length > 0)
                             {
                                 var exitCodeMatch = System.Text.RegularExpressions.Regex.Match(output, @"EXIT_CODE=(-?\d+)");
@@ -591,11 +606,9 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
                                     output = output.Replace(exitCodeMatch.Value, "").Trim();
                                 }
                             }
-
                             try { File.Delete(outputFile); } catch { }
                             break;
                         }
-
                         await Task.Delay(500);
                     }
                     catch
@@ -634,19 +647,16 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
             if (!_taskbarReady) return;
             if (_taskbarState != 2)
             {
-                ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)
-                    (_taskbarPtr, _mainHwnd, 2);
+                ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)(_taskbarPtr, _mainHwnd, 2);
                 _taskbarState = 2;
             }
-            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, ulong, ulong, int>)_fnSetProgressValue)
-                (_taskbarPtr, _mainHwnd, (ulong)Math.Clamp(percent, 0, 100), 100UL);
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, ulong, ulong, int>)_fnSetProgressValue)(_taskbarPtr, _mainHwnd, (ulong)Math.Clamp(percent, 0, 100), 100UL);
         }
 
         public unsafe void SetProgressIndeterminate()
         {
             if (!_taskbarReady || _taskbarState == 1) return;
-            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)
-                (_taskbarPtr, _mainHwnd, 1);
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)(_taskbarPtr, _mainHwnd, 1);
             _taskbarState = 1;
             Debug.WriteLine("[Taskbar] State = Indeterminate");
         }
@@ -654,29 +664,24 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
         public unsafe void ClearProgress()
         {
             if (!_taskbarReady || _taskbarState == 0) return;
-            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)
-                (_taskbarPtr, _mainHwnd, 0);
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)(_taskbarPtr, _mainHwnd, 0);
             _taskbarState = 0;
         }
 
         public unsafe void SetProgressError()
         {
             if (!_taskbarReady) return;
-            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)
-                (_taskbarPtr, _mainHwnd, 4); // TBPF_ERROR
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)(_taskbarPtr, _mainHwnd, 4);
             _taskbarState = 4;
-            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, ulong, ulong, int>)_fnSetProgressValue)
-                (_taskbarPtr, _mainHwnd, 100UL, 100UL);
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, ulong, ulong, int>)_fnSetProgressValue)(_taskbarPtr, _mainHwnd, 100UL, 100UL);
         }
 
         public unsafe void SetProgressCompleted()
         {
             if (!_taskbarReady) return;
-            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)
-                (_taskbarPtr, _mainHwnd, 2); // TBPF_NORMAL
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int, int>)_fnSetProgressState)(_taskbarPtr, _mainHwnd, 2);
             _taskbarState = 2;
-            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, ulong, ulong, int>)_fnSetProgressValue)
-                (_taskbarPtr, _mainHwnd, 100UL, 100UL);
+            ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr, ulong, ulong, int>)_fnSetProgressValue)(_taskbarPtr, _mainHwnd, 100UL, 100UL);
         }
 
         private static unsafe void OnTaskbarButtonCreated()
@@ -709,8 +714,7 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
 #pragma warning restore IL2026
         }
 
-        static nuint SubclassProc(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam,
-                           nuint uIdSubclass, nuint dwRefData)
+        static nuint SubclassProc(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam, nuint uIdSubclass, nuint dwRefData)
         {
             if (uMsg == 0x0024)
             {
@@ -721,7 +725,6 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
                 Marshal.StructureToPtr(info, lParam, true);
             }
 
-            // 拦截 TaskbarButtonCreated 消息
             if (uMsg == WM_TASKBARBUTTONCREATED)
             {
                 OnTaskbarButtonCreated();
@@ -730,15 +733,13 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
             return DefSubclassProc(hWnd, uMsg, wParam, lParam);
         }
 
-        delegate nuint SUBCLASSPROC(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam,
-                                     nuint uIdSubclass, nuint dwRefData);
+        delegate nuint SUBCLASSPROC(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam, nuint uIdSubclass, nuint dwRefData);
 
         [DllImport("comctl32.dll")]
-        static extern bool SetWindowSubclass(IntPtr hWnd, SUBCLASSPROC pfnSubclass,
-                                              nuint uIdSubclass, nuint dwRefData);
+        static extern bool SetWindowSubclass(IntPtr hWnd, SUBCLASSPROC pfnSubclass, nuint uIdSubclass, nuint dwRefData);
+
         [DllImport("ole32.dll")]
-        static extern int CoCreateInstance(ref Guid rclsid, IntPtr pUnkOuter, uint dwClsContext,
-                                    ref Guid riid, out IntPtr ppv);
+        static extern int CoCreateInstance(ref Guid rclsid, IntPtr pUnkOuter, uint dwClsContext, ref Guid riid, out IntPtr ppv);
 
         [DllImport("comctl32.dll")]
         static extern nuint DefSubclassProc(IntPtr hWnd, uint uMsg, nuint wParam, nint lParam);
@@ -757,7 +758,7 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
         {
             public int x, y;
         }
-        
+
         private const uint FLASHW_TRAY = 0x00000002;
         private const uint FLASHW_TIMERNOFG = 0x0000000C;
 
@@ -774,6 +775,7 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool FlashWindowEx(ref FLASHWINFO pwfi);
+
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         private static extern uint RegisterWindowMessage(string lpString);
 
@@ -803,21 +805,24 @@ echo EXIT_CODE=%ERRORLEVEL% >> ""{outputFile}""
                 string position = localSettings.Values["PanePosition"] as string ?? "Left";
                 if (localSettings.Values["PanePosition"] == null)
                     localSettings.Values["PanePosition"] = "Left";
+
                 if (position == "Top")
                 {
                     NavView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
                     NavView.IsPaneToggleButtonVisible = false;
-                    NavView.OpenPaneLength = 0;
-                    NavView.CompactPaneLength = 0;
                     NavViewContainer.Margin = new Thickness(0, 48, 0, 0);
                 }
                 else
                 {
                     NavView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
                     NavView.IsPaneToggleButtonVisible = false;
-                    NavView.OpenPaneLength = 72;
-                    NavView.CompactPaneLength = 72;
                     NavViewContainer.Margin = new Thickness(0, 48, 0, 0);
+                }
+
+                // 切换顶部/左侧模式后主动刷新一次面包屑判断逻辑
+                if (ContentFrame.CurrentSourcePageType != null)
+                {
+                    UpdateBreadcrumb(ContentFrame.CurrentSourcePageType);
                 }
             }
             catch (Exception ex)

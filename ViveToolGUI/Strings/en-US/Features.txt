@@ -17,7 +17,7 @@ Cobalt Windows 10 rs_prerelease/co_release 21227-21390.2025
 Cobalt Windows 11 21H2 co_release 22000.51-22000.xxxx
 25704915  Shows estimated install completion time (but Microsoft doesn't want people without the rollout to enable this hidden feature, how strange), suspected fully enabled in 22000.65)
 31371065  Teams chat button (requires Teams installed), the one shown in Microsoft's promotional video (enabled by default in 22000.100, later replaced by a new ID for Teams Free)
-39263329 /variant:1/3/5 1: Shows "Search" when not clicked, turns blue when clicked 3: Search icon changed to a globe with a magnifying glass 5: Shows "Search Web" when not clicked, turns blue when clicked
+39263329 variant:1/3/5 1: Shows "Search" when not clicked, turns blue when clicked 3: Search icon changed to a globe with a magnifying glass 5: Shows "Search Web" when not clicked, turns blue when clicked
                                             Search entry point on the taskbar has been redesigned into three styles (after enabling, right-clicking the taskbar on 25211+ shows Task Manager) (disabled by default on 25211 and 22623.730, disabled by default on 22000.1042, Style 1 now fully promoted, 22621.900 invalid)
 (41561445
 ------------------------------------------
@@ -51,7 +51,7 @@ Or apply the following registry value:
 (39281392 (Note: This hidden ID requires separate enablement in 22622.xxx version, 22623.730 does not need enablement)
 37007953) The "Show touch keyboard" note under the "Typing" page has a new dropdown with 3 available options ("Never", "When a keyboard is not connected", and "Always") (disabled by default in 25151, A/B testing started in 25188, added in 22622.586 and disabled by default, promoted to all Preview members in 22623.885, now promoted to stable users)
 36860984  Enable Task Manager option in taskbar right-click menu (A/B testing started in 22621.675 and 22623.870)
-42038001 /variant:1/3/5 1: Shows "Search" when not clicked, turns blue when clicked 3: Search icon changed to a globe with a magnifying glass 5: Shows "Search Web" when not clicked, turns blue when clicked
+42038001 variant:1/3/5 1: Shows "Search" when not clicked, turns blue when clicked 3: Search icon changed to a globe with a magnifying glass 5: Shows "Search Web" when not clicked, turns blue when clicked
                                             Search entry point on the taskbar has been redesigned into three styles (valid for versions 22621.900 and above)
 26008830  New optimized version of taskbar (A/B testing started in 22563, promoted to all Preview members in 22581, temporarily disabled in 22610, removed in 22616, returned in 25193 but disabled by default, A/B testing started in 25197, A/B testing started in 22623.730, now promoted to stable users)
 38764045  New taskbar tray icons can be moved (A/B testing started in 25211, disabled by default on 22621/3.730, now promoted to stable users)
@@ -74,16 +74,16 @@ Copper rs_prerelease 25115-25236
 37634385  Tabbed browsing added to File Explorer (A/B testing started in 25136, promoted to all Preview members in 25179, now promoted to stable users)
 36354489  Layout of left navigation pane updated (A/B testing started in 25136, promoted to all Preview members in 25179, now promoted to stable users)
 37010913  Search entry point has moved to the left of the Widgets entry point on the left side of the taskbar (left-aligned without change) (probably won't be tested for now) (removed)
-39072097 /variant:1-6 1: Shows "Search" when not clicked, turns blue when clicked 2: Shows "Search" when not clicked, text disappears and turns blue when clicked 3: Search icon changed to a magnifying glass with a globe 4: Search icon changed to a globe with a small magnifying glass in the bottom right corner 5: Shows "Search Web" when not clicked, turns blue when clicked 6: Shows today's Search Highlights when not clicked, turns blue when clicked
+39072097 variant:1-6 1: Shows "Search" when not clicked, turns blue when clicked 2: Shows "Search" when not clicked, text disappears and turns blue when clicked 3: Search icon changed to a magnifying glass with a globe 4: Search icon changed to a globe with a small magnifying glass in the bottom right corner 5: Shows "Search Web" when not clicked, turns blue when clicked 6: Shows today's Search Highlights when not clicked, turns blue when clicked
                                             Search entry point on the taskbar has been redesigned into six styles (after enabling, right-clicking the taskbar on 25211+ will not show Task Manager) (random style testing in 25158 (bad luck might get the old style), removed in 25227, Style 1 now promoted to stable users)
 39258685  Windows Spotlight themes (included in 25140, usable but disabled by default in 25163, A/B testing started in 25169, Style 1 now promoted to stable users)
 36165848  Enable drawing in Stickers (disabled by default in 25174)
 39751186  Enable new taskbar icon pop-up animation (random testing in 25179, suspected removed in 25182)
 40430431  Added "Create live kernel dump file" option to the right-click context menu under the "Details" page, enabling the ability to generate live kernel dumps (usable from 25197, A/B testing started in 25276, Style 1 now promoted to stable users)
 (39710659 (This ID is not needed for versions 25281 and above)
-40268500 /variant:0/1/3 (This ID is deprecated in the new style)
+40268500 variant:0/1/3 (This ID is deprecated in the new style)
 Old style numbers explanation: 0: Desktop Spotlight UI at the bottom, desktop icons hidden 1: Desktop Spotlight UI in the bottom right corner, desktop icons not hidden 3: Desktop Spotlight UI in the top right corner, desktop icons hidden
-40268500 /variant:0/1/2
+40268500 variant:0/1/2
 New style numbers explanation: 0: Desktop Spotlight UI in the top right corner, desktop icons hidden 1: Desktop Spotlight UI in the bottom right corner, desktop icons not hidden 2: Desktop Spotlight UI at the bottom, desktop icons hidden (this style causes File Explorer to crash)
 39880030,40522394,41744267,41861575) New Desktop Spotlight UI (disabled by default in 25197, removed in 25206, different styles tested in 25281, stopped testing in 25309 (requires disabling the WASDK File Explorer), removed in 25352, different styles A/B testing in 23451, now promoted to stable users)
 (36390579 (Required to enable the new UI below)
@@ -106,11 +106,11 @@ Zinc rs_prerelease 25247-25346
 42295138  New File Explorer folder preview pane UI (placeholder, deprecated)
 42106010  More actions for sound output in Quick Settings (disabled by default in 25281, A/B testing started in 25309)
 42189933  Allow Windows to be installed on ReFS partition (disabled by default in 25281, temporarily removed in 25357)
-41861575 /variant:0/2/3 0: Desktop Spotlight icon in bottom right 2: Desktop Spotlight icon at the bottom center 3: Desktop Spotlight in top right corner
+41861575 variant:0/2/3 0: Desktop Spotlight icon in bottom right 2: Desktop Spotlight icon at the bottom center 3: Desktop Spotlight in top right corner
                                             Change Desktop Spotlight icon position (A/B testing started in 25281, now promoted to stable users)
 42783107  Windows Setup will format with ReFS partition by default (disabled by default in 25284, temporarily removed in 25357, now promoted to stable users)
 42550315  Recovery interface in Settings will support in-place upgrade (feels like going back to 8/8.1, feature currently not working (usable in 25905)) (disabled by default in 25284, enabled by default in 25905, disabled by default in 23516)
-40851068 /variant:0/1/2/3 0: Only show Snap this window 1: Don't show the new title but windows open faster when hovering 2: Show new title with app icon 3: Combination of variant 1 and 2
+40851068 variant:0/1/2/3 0: Only show Snap this window 1: Don't show the new title but windows open faster when hovering 2: Show new title with app icon 3: Combination of variant 1 and 2
 Snap window improvements (random style testing started in 25300, one style suspected tested in 25309, disabled by default in 25352, currently suspected removed?)
 34912776  Change keyboard layout order (disabled by default in 25300, now promoted to stable users)
 38612934  New presence-aware UI (disabled by default in 25300, now promoted to stable users)
@@ -136,7 +136,7 @@ HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell\Update\Packages\MicrosoftWi
 , now change the ownership to Everyone, then add Everyone in Groups and users and check all permissions, finally change the value of Compatible to 1 (not needed for 25309)
                                     Enable the brand new WASDK File Explorer (disabled by default in 25300 and 23403 (not recommended for physical machines due to performance issues), enabled by default in 23466, now promoted to stable users)
 39696859  File Explorer new keyboard shortcuts for selection (A/B testing started in 25314 and 23403, enabled by default in 23440 and 25346, temporarily removed in 25352, returned in 25905, now promoted to stable users)
-41040327 /variant:0/1 0: Gallery between the main page and OneDrive 1: Gallery below the main page and OneDrive
+41040327 variant:0/1 0: Gallery between the main page and OneDrive 1: Gallery below the main page and OneDrive
                                             File Explorer added Gallery item (disabled by default in 25272 and 23403, A/B testing started in 23435, promoted to all Preview members in 23471, now promoted to stable users)
 42295138  Enable new Gallery view (disabled by default in 25300 and 23403, temporarily removed in 25352, returned in 25905 (requires enabling 41040327 first), A/B testing started in 23435, promoted to all Preview members in 23471, now promoted to stable users)
 38664959,40064642,41070380  New file recommendations on the main page (requires AAD Microsoft account login) (A/B testing started in 25314 and 23403, temporarily removed in 25352, returned in 25905, now promoted to stable users)
@@ -172,12 +172,12 @@ HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell\Update\Packages\MicrosoftWi
 44573982,44571814  System apps show "System" text under System apps in All apps on the Start menu (disabled by default in 23481 and 25905, now promoted to stable users)
 41799415,43679417,44504204  UWP inking improvements (A/B testing started in 23481, now promoted to stable users)
 40608813  Some options removed from Folder Options (can still be changed via Registry) (enabled by default in 23481, now rolled back)
-42500395 /variant:1/2  Enable Snap window suggestions (disabled by default in 23493, enabled by default in 25992)
+42500395 variant:1/2  Enable Snap window suggestions (disabled by default in 23493, enabled by default in 25992)
 44776738,42105254,41655236,44774629,44850061  Taskbar shows Copilot icon (A/B testing started in 23493 and 25905, enabled by default in 23506, now promoted to stable users)
 42058345,42058313,42977909,44049197,44124573  New main page added in Settings (A/B testing started in 23493, now promoted to stable users)
 43729731  Settings - Bluetooth and other devices - Phone Link slightly changed (disabled by default in 23506, now promoted to stable users)
 44663396,44663406  Settings - System - Power and Battery changed (disabled by default in 23506)
-43180950 /variant:0/1 (0: Directly launch Dev Home page, 1: First launch Getting started, then prompt to open Dev Home page in Getting started)
+43180950 variant:0/1 (0: Directly launch Dev Home page, 1: First launch Getting started, then prompt to open Dev Home page in Getting started)
                                             New post-OOBE experience (different variants tested from 23506)
 40581622  New Program Compatibility window UI (available in 25276 and above 23506, now promoted to stable users)
 44470355,46045587  Start menu recommended items can merge recently installed apps together (disabled by default in 23545 and 25967)
@@ -188,7 +188,7 @@ HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell\Update\Packages\MicrosoftWi
 46874360  Copilot moved to the bottom right corner (disabled by default in 25992 and 23585, enabled by default in 26040)
 46619780  New Mobile devices management under Settings - Bluetooth and other devices - Mobile devices (disabled by default in 23590, A/B testing started in 23612 and 26040)
 44470355,39885363  Voice Access supports more languages (enabled by default in 23612)
-47526873 /variant:1 /variantpayloadkind:1 /variantpayload:1  Lock screen weather widget refreshed (A/B testing started in 23612, disabled by default in 26040)
+47526873 variant:1 variantpayloadkind:1 variantpayload:1  Lock screen weather widget refreshed (A/B testing started in 23612, disabled by default in 26040)
 ------------------------------------------ 
 Gallium rs_prerelease 25905-25941
 37356106  GDI code in Win32k rewritten in Rust (A/B testing started in 25905)
@@ -239,7 +239,7 @@ Since the Beta channel always receives new feature updates first, feature launch
 48969045  Enable more animated Widgets taskbar icon sets (e.g., new animated "Partly Cloudy Night" icon) as well as clearer icon improvements rolled out to Preview members and users with KB5036980 installed
 48801541  Other lock screen cards such as Finance and Sports have been rolled out, can be enabled by running the following command KB5035941 (19045.4235) for Windows 10
 46107637,48799383  Studio Effects icon that doesn't work has been added to the system tray on the taskbar. Disabled by default 22635.3276
-39695921 /variant:3 "Super Resolution"
+39695921 variant:3 "Super Resolution"
 48468527,48468541,48660958  If the taskbar is left-aligned, the Widgets entry point will move to the left side of the system tray, and when launching the Widgets dashboard, it will fly out from the right instead of the left. 22635.3420
 47664723,48433719  Drag-and-drop between WinUI3 File Explorer tabs restored. 22635.3420
 45262221  "Duplicate tab" option in tab context menu to copy selected tabs (initially implemented in build 22635.3566) has been backported to this build. This feature is disabled by default but can be manually activated by enabling  and the velocity staging key (requires enabling 48433719)
@@ -258,7 +258,7 @@ Since the Beta channel always receives new feature updates first, feature launch
 48525682  Added the ability to show shortened date and time on the taskbar (can be toggled via "Personalization" > "Taskbar" in the Settings app). This feature is disabled by default but can be manually activated by enabling the velocity staging key. (22635.3790)
 49082522  Added the ability to toggle the notification bell icon on the taskbar (can be toggled via "Personalization" > "Taskbar" in the Settings app). This feature is disabled by default but can be manually activated by enabling the velocity staging key
 47557358,49686193  %SystemRoot%\System32\IntegratedServicesRegionPolicySet.json "Third party feed is shown in Widgets." Win11 Widgets becomes WinUI3 (please update WWEP to version 524.20502.0.0 or above) then enable  and velocity staging key and the "Third party feed is shown in Widgets" policy (requires enabling 48433719)
-47205210 /variant:2  Start menu improvements (1. List improvements 2. Changed to grid view) (requires enabling 48433719)
+47205210 variant:2  Start menu improvements (1. List improvements 2. Changed to grid view) (requires enabling 48433719)
 49221331  Start menu becomes list, grid, and group sorting (22635.4082) (requires 47205210, 48433719)
 49686287  Wi-Fi SSID displayed using UTF-8 encoding, so SSIDs with Unicode characters are correctly displayed in output
 51228992  New "Allow HDR video streaming even when HDR is off" toggle switch added under HDR > System > Display
@@ -276,12 +276,12 @@ Since the Beta channel always receives new feature updates first, feature launch
 45286411  New "Share" option added to search results in the Start menu "Search" page for quickly opening the Windows Share flyout
 32222762,47205210  Added ability to show Jump List when right-clicking apps pinned to the Start menu with a Jump List (requires enabling 48433719)
 43283102  Pin apps to taskbar or desktop by dragging them from the "Pinned" section in the Start menu (desktop doesn't seem to work, let's see what Microsoft does next!)
-49140016 /variant:1  Adjustments to user interaction with Windows Spotlight icon on desktop have been further refined (requires enabling 48433719)
+49140016 variant:1  Adjustments to user interaction with Windows Spotlight icon on desktop have been further refined (requires enabling 48433719)
 38738362  Display expiration date (time bomb) in the "Windows specifications" section under "System" > "About"
 46700501,46700599,46700719,46700936,47109994,48636059,48637472,50104492,50390676  Various fix changes for File Explorer
 49666228  "Privacy & security" > "General" page renamed to "Recommendations and offers", with a new icon and updated descriptions (requires enabling 48433719)
 33235889  The Windows Update > Advanced Options redesigned "Delivery Optimization" page, initially implemented in build 27686, has been backported to this build and rolled out. (22635.4082)
-52793632 /variant:1/2  Windows Spotlight experience has been updated with hotspots that show additional information on hover, and reduced flyouts or minimized Spotlight UI. This change is rolling out gradually but can be manually activated by enabling the velocity staging key and setting the parameter to 1 (for reduced flyout hotspots) or 2 (for minimized UI hotspots). (22635.4145)
+52793632 variant:1/2  Windows Spotlight experience has been updated with hotspots that show additional information on hover, and reduced flyouts or minimized Spotlight UI. This change is rolling out gradually but can be manually activated by enabling the velocity staging key and setting the parameter to 1 (for reduced flyout hotspots) or 2 (for minimized UI hotspots). (22635.4145)
 50968699  Added ability to share content directly to Notepad and Clipchamp from the Windows Share flyout. (22635.4145)
 50564196  Sign out option under ellipsis menu in Account Manager has been moved to the main view, and Switch user option has been replaced with a user dropdown. (22635.4145)
 51900073  New section added under Bluetooth and devices > for configuring touchscreen edge gestures. (22635.4145) (requires enabling 48433719)
@@ -307,7 +307,7 @@ Since the Beta channel always receives new feature updates first, feature launch
 50235585,52081114  "New Folder" option in modern context menu when right-clicking locations in the navigation pane (previously implemented in build 22635.4000) has been rolling out. (22635.4445)
 46493758  New "Share" option added to context menu when right-clicking recently used files in the Start menu "Recommended" section for quick sharing. Disabled by default (22635.4445) (requires 48433719)
 45738940  New "Share" button added next to recently used items in Jump List for quick sharing. Disabled by default. (22635.4445) (requires 48433719)
-53655156 /variant:1/2/3/4/5 53655173  Feature to show additional descriptions and ⊞ Win+Z shortcut hints implemented in Snap Assist. Disabled by default (22635.4510)
+53655156 variant:1/2/3/4/5 53655173  Feature to show additional descriptions and ⊞ Win+Z shortcut hints implemented in Snap Assist. Disabled by default (22635.4510)
 41598133,41670003  Redesigned "Reset this PC" and "Go back to earlier version" dialogs were reimplemented in builds 25231 and 25247 respectively, but later completely removed in build 26085. Disabled by default (27744)
 51960011  Fix File Explorer menu popping up (may cause thin lines on tabs)
 54237951  Unknown new feature in Settings
@@ -315,15 +315,15 @@ Since the Beta channel always receives new feature updates first, feature launch
 54865932  Improved support for web search providers in Windows Search, including clearer provider properties in tabs (previously implemented for European Economic Area (EEA) users in build 26120.2510, and can be manually activated by enabling the velocity staging key)
 26120:
 48822452  Ability to show battery percentage in the system tray, and new "Battery percentage" section under System > Power and battery in the Settings app (26120.2510) (requires 48433719)
-48504539 /variant:1/2/3/4  "Emoji and more" system tray button updated with 4 additional icons. These icons are disabled by default but can be manually activated by enabling the velocity staging key and setting the parameter to 1 through 4.
+48504539 variant:1/2/3/4  "Emoji and more" system tray button updated with 4 additional icons. These icons are disabled by default but can be manually activated by enabling the velocity staging key and setting the parameter to 1 through 4.
 50179255,53672489  Native solution on lock screen Widgets (22635.4870) (after enabling, Widgets become WinUI3, Settings - Personalization - Lock screen will not open in 26120.3073)
-52145430 /variant:1/2  Windows Spotlight icon changes (22635.4660) 1. With new text 2. Without new text
+52145430 variant:1/2  Windows Spotlight icon changes (22635.4660) 1. With new text 2. Without new text
 47274802  Text scaling support in various warning and error message dialogs, improved support for File Explorer, file open/save dialogs, and copy dialogs that follow the text size preference under "Accessibility → Text size" in the Settings app (requires 48433719)
 54322778  New Ctrl+Alt+- keyboard shortcut in Magnifier to toggle between current zoom and 1× zoom
 49527529  "Recall" is a device sync feature designed to create seamless OneDrive integration between your phone and Windows desktop environment (requires 48433719)
 47944061  New right-click context menu to close or pause the "Start backup" reminder in the File Explorer address bar (requires 48433719)
 51784082,54618938  New top cards under "System → About" page in Settings app for displaying key hardware specifications
-53844009 /variant:1/3/4  Updates to hotspots in the top right corner of the lock screen
+53844009 variant:1/3/4  Updates to hotspots in the top right corner of the lock screen
 54572881  If the "Restore previous folders windows when signing in" option is enabled, all previously opened tabs in each File Explorer window can be restored at sign-in (requires 48433719)
 48656084  Ability to auto open Spotlight flyout when hovering over the Spotlight button on the desktop (requires 48433719)
 54920368  Removal of "Location history" feature and its corresponding settings under Privacy and security → Location in the Settings app
@@ -361,7 +361,7 @@ Since the Beta channel always receives new feature updates first, feature launch
 55390938  Dropdown menu for selecting high, medium, or low compression for images in the Windows Share flyout (26120.4151)
 56778684,56892083  If the new default browser registers other file and link types, they will be set to them & a new "Set defaults" button, and if the browser registers file types, the browser can open PDF files .pdf (EEA exclusive) (26120.4151)
 56661439  New ⊞ Win+Shift+T keyboard shortcut to directly open the text extractor feature of Snipping Tool. (26120.4151)
-57166128 /variant:2  New simplified sign-in page implemented in Windows Backup app. (26120.4151)
+57166128 variant:2  New simplified sign-in page implemented in Windows Backup app. (26120.4151)
 55805655  Ability to show recommendations from Microsoft Store apps, represented by a Microsoft Store icon next to apps in the "Open with..." dialog. (26120.4151) (requires 41118774)
 57471391  Privacy and security → Search page in Settings app (merged from Search permissions and Search Windows subpages) (26120.4230)
 57237670,57345863  New feature discoverability dialogs in Narrator (26120.4230)
@@ -424,13 +424,13 @@ Since the Beta channel always receives new feature updates first, feature launch
 61410885  Changes to the pause updates feature under the Windows Update page. (26220.8283)
 59728252  WinUI 3 ring rotation animation has been implemented on the sign-in and shutdown/restart screens. (26220.8283)
 60897831  List of all available updates shown under the Windows Update page has been moved to a collapsible "Available updates" section. (26220.8283)
-60662124  New "Screen color temperature" setting in the Accessibility section of the Settings app. (26220.8283)
-60511437  New transition effects when hovering over open apps or app groups on the taskbar (previously only had hover animations, now includes app switching and other animations) (already existed before, now migrated to new ID) (26220.7877)
-61014711 Allows you to try the new file size format in File Explorer.
-60716524 New low latency profile (unclear what it is)
-61391826 New low latency profile for application startup (unclear what it is)
-???????? Feature to install recommended apps directly through the Share flyout window via Microsoft Store is gradually being rolled out to Azure Active Directory (AAD) users.
-59213768 The taskbar position (vertical taskbar) feature, missing since the initial release of Windows 11, has been re-added and is being gradually promoted.
-61090762 A new compact taskbar with smaller icons and reduced height has been added; it can be toggled via the "Show smaller taskbar buttons" dropdown in Settings → Personalisation → Taskbar.
-???????? The context menu in File Explorer now has a new refresh option.
-???????? Print options will also appear in the modern context menu along with the option to quickly create shortcuts in the current folder.
+60662124 Makes the new 'Screen Tone' setting apply to accessibility sections. (26220.8283)
+60511437 Introduces a new transition effect when hovering the mouse over an app or app group opened on the taskbar (previously only hover animations were present, now includes app switch animations) (previously existed, now migrated to a new ID) (26220.7877)
+61014711 Allows you to try the new file size format in File Explorer. The right-click menu in File Explorer now includes options to Refresh, Print, and Create Shortcut.
+60716524 New low-latency profile
+61391826 New low-latency profile for application launch
+???????? Function to install recommended apps directly through the Share flyout via Microsoft Store, gradually being made available to Azure Active Directory (AAD) users.
+59213768 The taskbar position (vertical taskbar) feature, missing since the initial release of Windows 11, has now been re-added and is being gradually rolled out. (26300.8493)
+61090762 Added a compact taskbar with smaller icons and reduced height, which can be toggled in the Settings app under Personalization → Taskbar in the 'Show smaller taskbar buttons' dropdown menu. (26300.8493)
+61754985,61225604,61596616,61596617,61596618,61596619 In the Settings app's Start menu and the corresponding Personalization → Start page, added: (1. Renaming the 'Recommended' section to 'Recent'. 2. Adding section hierarchy toggle, to show or hide 'Pinned', 'Recommended', and 'All' individually. 3. Added a 'Start menu size' dropdown menu, allowing selection of small or large Start menu. 4. Added options to hide username and avatar. 5. If all Start menu sections are turned off, a new placeholder image appears.) (26300.8553)
+61372722 Fixes the issue of white flickering in File Open and Save As dialogs in Dark Mode.
