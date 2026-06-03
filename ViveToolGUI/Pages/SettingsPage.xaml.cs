@@ -35,7 +35,6 @@ namespace ViVeToolGUI.Pages
                 "Dark" => 2,
                 _ => 0
             };
-
             string material = localSettings.Values["AppMaterial"] as string ?? "MicaAlt";
             RbMaterial.SelectedIndex = material switch
             {
@@ -43,15 +42,16 @@ namespace ViVeToolGUI.Pages
                 "Acrylic" => 2,
                 _ => 0
             };
-
             string pos = localSettings.Values["PanePosition"] as string ?? "Left";
             PanePositionCombo.SelectedIndex = pos == "Top" ? 1 : 0;
-
             bool sound = localSettings.Values["EnableSound"] is bool b ? b : true;
             if (localSettings.Values["EnableSound"] == null)
                 localSettings.Values["EnableSound"] = true;
-
             SoundToggle.IsOn = sound;
+            bool notification = localSettings.Values["EnableQueryNotification"] is bool bn ? bn : true;
+            if (localSettings.Values["EnableQueryNotification"] == null)
+                localSettings.Values["EnableQueryNotification"] = true;
+            NotificationToggle.IsOn = notification;
         }
 
         public void LoadAppInfo()
@@ -147,6 +147,21 @@ namespace ViVeToolGUI.Pages
             ElementSoundPlayer.State = isOn
                 ? ElementSoundPlayerState.On
                 : ElementSoundPlayerState.Off;
+        }
+
+        private void NotificationToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializing) return;
+            localSettings.Values["EnableQueryNotification"] = NotificationToggle.IsOn;
+        }
+
+        private async void ViewDisclaimer_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Dialogs.DisclaimerDialog(isManualTrigger: true)
+            {
+                XamlRoot = this.XamlRoot
+            };
+            await dialog.ShowAsync();
         }
     }
 }

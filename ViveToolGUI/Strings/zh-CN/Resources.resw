@@ -406,10 +406,10 @@
     <value>查看已整理的Features</value>
   </data>
   <data name="AboutMyFriend.Text" xml:space="preserve">
-    <value>关于Feature ID整理者</value>
+    <value>关于 Feature ID 整理者</value>
   </data>
   <data name="AboutViVeCore.Text" xml:space="preserve">
-    <value>关于ViVeTool核心 (Github)</value>
+    <value>关于 ViVeTool 核心 (Github 中的原作者)</value>
   </data>
   <data name="Query_NotificationTitle" xml:space="preserve">
     <value>查询完成</value>
@@ -450,7 +450,7 @@
   <data name="Dialog_Disclaimer.PrimaryButtonText" xml:space="preserve">
     <value>继续使用</value>
   </data>
-  <data name="Dialog_Disclaimer.CloseButtonText" xml:space="preserve">
+  <data name="Dialog_Disclaimer_SecondaryButtonText" xml:space="preserve">
     <value>退出应用</value>
   </data>
   <data name="Dialog_Disclaimer_Body.Text" xml:space="preserve">
@@ -461,5 +461,17 @@
   </data>
   <data name="BackButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>返回</value>
+  </data>
+  <data name="Settings_AboutExpander_DisclaimerButton.Content" xml:space="preserve">
+    <value>再次查看使用须知</value>
+  </data>
+  <data name="BehaviorGroup.Text" xml:space="preserve">
+    <value>行为</value>
+  </data>
+  <data name="Settings_NotificationCard.Header" xml:space="preserve">
+    <value>通知</value>
+  </data>
+  <data name="Settings_NotificationCard.Description" xml:space="preserve">
+    <value>当查询完本机 Feature ID 后若窗口未聚焦则发送通知</value>
   </data>
 </root>

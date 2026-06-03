@@ -105,6 +105,27 @@
             </StackPanel>
 
             <StackPanel Spacing="3">
+                <TextBlock x:Uid="BehaviorGroup"
+                           FontSize="14"
+                           Margin="0,0,0,6"
+                           FontWeight="SemiBold"/>
+
+                <controls:SettingsCard x:Uid="Settings_NotificationCard"
+                                       HorizontalAlignment="Stretch"
+                                       HorizontalContentAlignment="Stretch"
+                                       MinHeight="70"
+                                       Padding="16,0">
+                    <controls:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xEA8F;" />
+                    </controls:SettingsCard.HeaderIcon>
+
+                    <ToggleSwitch x:Name="NotificationToggle"
+                                  HorizontalAlignment="Right"
+                                  Toggled="NotificationToggle_Toggled"/>
+                </controls:SettingsCard>
+            </StackPanel>
+
+            <StackPanel Spacing="3">
                 <TextBlock x:Uid="AboutGroup"
                            FontSize="14"
                            Margin="0,0,0,6"
@@ -119,6 +140,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
@@ -136,8 +158,14 @@
                                 <TextBlock x:Name="TxtCopyright" FontSize="12" Opacity="0.8"/>
                             </StackPanel>
 
+                            <Button Grid.Column="2"
+                                    x:Uid="Settings_AboutExpander_DisclaimerButton"
+                                    VerticalAlignment="Center"
+                                    Click="ViewDisclaimer_Click"
+                                    Margin="0,0,12,0"/>
+
                             <TextBlock x:Name="TxtVersion"
-                                       Grid.Column="2"
+                                       Grid.Column="3"
                                        FontSize="14.4"
                                        Opacity="0.7"
                                        VerticalAlignment="Center"/>

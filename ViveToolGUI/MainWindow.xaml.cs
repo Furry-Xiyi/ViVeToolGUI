@@ -427,6 +427,39 @@ namespace ViVeToolGUI
             bool isActive = args.WindowActivationState != WindowActivationState.Deactivated;
             IsWindowActivated = isActive;
             TitleBarAppName.Opacity = isActive ? 1.0 : 0.5;
+            if (isActive)
+                ClearBadge();
+        }
+
+        public void SetBadge(int count)
+        {
+            try
+            {
+                string xml = $"<badge value=\"{Math.Clamp(count, 1, 99)}\"/>";
+                var doc = new Windows.Data.Xml.Dom.XmlDocument();
+                doc.LoadXml(xml);
+                Windows.UI.Notifications.BadgeUpdateManager
+                    .CreateBadgeUpdaterForApplication()
+                    .Update(new Windows.UI.Notifications.BadgeNotification(doc));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SetBadge Error: {ex.Message}");
+            }
+        }
+
+        public void ClearBadge()
+        {
+            try
+            {
+                Windows.UI.Notifications.BadgeUpdateManager
+                    .CreateBadgeUpdaterForApplication()
+                    .Clear();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ClearBadge Error: {ex.Message}");
+            }
         }
 
         public void ShowNotification(string title, string body)

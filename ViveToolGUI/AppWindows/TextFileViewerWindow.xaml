@@ -34,23 +34,23 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <ToggleButton x:Name="MatchCaseToggle" x:Uid="TextFileViewerWindowMatchCaseToggle" Grid.Column="0" Padding="0" Width="32" Height="32" Margin="0,0,8,0" Opacity="0" IsHitTestVisible="False" Click="MatchCaseToggle_Click">
+                <ToggleButton x:Name="MatchCaseToggle" x:Uid="TextFileViewerWindowMatchCaseToggle" Grid.Column="0" Padding="0" Width="32" Height="32" Background="Transparent" Style="{StaticResource ToggleButtonRevealStyle}" Margin="0,0,8,0" Opacity="0" IsHitTestVisible="False" Click="MatchCaseToggle_Click">
                     <ToggleButton.RenderTransform>
                         <TranslateTransform x:Name="MatchCaseToggleTransform" X="36"/>
                     </ToggleButton.RenderTransform>
                     <FontIcon FontSize="14" Glyph="&#xE8E9;"/>
                 </ToggleButton>
 
-                <TextBox x:Name="SearchBox" x:Uid="TextFileViewerWindowSearchBox" Grid.Column="1" PlaceholderText="Search..." Width="500" GotFocus="SearchBox_GotFocus" LostFocus="SearchBox_LostFocus" TextChanged="SearchBox_TextChanged"/>
+                <TextBox x:Name="SearchBox" x:Uid="TextFileViewerWindowSearchBox" Grid.Column="1" Width="500" CornerRadius="16" GotFocus="SearchBox_GotFocus" LostFocus="SearchBox_LostFocus" TextChanged="SearchBox_TextChanged"/>
 
                 <StackPanel x:Name="NavButtonsPanel" Grid.Column="2" Orientation="Horizontal" Spacing="4" Margin="8,0,0,0" Opacity="0" IsHitTestVisible="False">
                     <StackPanel.RenderTransform>
                         <TranslateTransform x:Name="NavButtonsTransform" X="-36"/>
                     </StackPanel.RenderTransform>
-                    <Button x:Name="PrevButton" x:Uid="TextFileViewerWindowPrevButton" Padding="0" Width="32" Height="32" Click="PrevButton_Click">
+                    <Button x:Name="PrevButton" x:Uid="TextFileViewerWindowPrevButton" Padding="0" Width="32" Height="32" Background="Transparent" Style="{StaticResource ButtonRevealStyle}" Click="PrevButton_Click">
                         <FontIcon FontSize="14" Glyph="&#xE74A;"/>
                     </Button>
-                    <Button x:Name="NextButton" x:Uid="TextFileViewerWindowNextButton" Padding="0" Width="32" Height="32" Click="NextButton_Click">
+                    <Button x:Name="NextButton" x:Uid="TextFileViewerWindowNextButton" Padding="0" Width="32" Height="32" Background="Transparent" Style="{StaticResource ButtonRevealStyle}" Click="NextButton_Click">
                         <FontIcon FontSize="14" Glyph="&#xE74B;"/>
                     </Button>
                 </StackPanel>

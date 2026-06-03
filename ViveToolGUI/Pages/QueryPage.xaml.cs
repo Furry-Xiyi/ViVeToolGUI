@@ -101,7 +101,9 @@ namespace ViVeToolGUI.Pages
 
                 DispatcherQueue.TryEnqueue(() =>
                 {
-                    if (MainWindow.Instance != null && !MainWindow.Instance.IsWindowActivated)
+                    bool enableNotification = Windows.Storage.ApplicationData.Current.LocalSettings.Values["EnableQueryNotification"] as bool? ?? true;
+
+                    if (enableNotification && MainWindow.Instance != null && !MainWindow.Instance.IsWindowActivated)
                     {
                         string title = _resourceLoader.GetString("Query_NotificationTitle");
                         string body = string.Format(
@@ -109,6 +111,7 @@ namespace ViVeToolGUI.Pages
                             _allFeatures.Length);
 
                         MainWindow.Instance.ShowNotification(title, body);
+                        MainWindow.Instance.SetBadge(1);
                     }
                 });
             }

@@ -33,7 +33,6 @@ namespace ViVeToolGUI.AppWindows
                 return;
             }
             _instance = new TextFileViewerWindow(uriString);
-            _instance.Closed += (s, e) => _instance = null;
             _instance.Activate();
         }
 
@@ -68,7 +67,30 @@ namespace ViVeToolGUI.AppWindows
             };
 
             _appWindow.Changed += AppWindow_Changed;
+            this.Closed += TextFileViewerWindow_Closed; // 新增生命周期接管
+
             LoadText(uriString);
+        }
+
+        // 处理窗口销毁时的安全清理
+        private void TextFileViewerWindow_Closed(object sender, WindowEventArgs args)
+        {
+            _instance = null;
+
+            // 1. 取消订阅尺寸变化事件，防止关闭瞬间继续计算布局引发异常
+            if (_appWindow != null)
+            {
+                _appWindow.Changed -= AppWindow_Changed;
+            }
+
+            // 2. 停掉所有运行中的 DispatcherTimer，防止野指针
+            if (_searchTimer != null)
+            {
+                _searchTimer.Stop();
+            }
+
+            // 3. 释放材质背景，防止 WinUI 3 底层回收崩溃
+            this.SystemBackdrop = null;
         }
 
         private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
@@ -103,45 +125,53 @@ namespace ViVeToolGUI.AppWindows
 
         private void UpdateDragRects()
         {
-            if (_appWindow == null || Content?.XamlRoot == null) return;
+            // 加上 IsLoaded 判断，防止销毁阶段进入
+            if (_appWindow == null || Content?.XamlRoot == null || SearchBox == null || !SearchBox.IsLoaded) return;
 
-            var scale = Content.XamlRoot.RasterizationScale;
-            var titleBarHeight = (int)(_appWindow.TitleBar.Height * scale);
-            var windowWidth = _appWindow.Size.Width;
-
-            var rects = new List<RectInt32>();
-
-            int exX, exRight;
-
-            if (_controlsExpanded)
+            try
             {
-                var searchTransform = SearchBox.TransformToVisual(null);
-                var searchBounds = searchTransform.TransformBounds(
-                    new Windows.Foundation.Rect(0, 0, SearchBox.ActualWidth, SearchBox.ActualHeight));
+                var scale = Content.XamlRoot.RasterizationScale;
+                var titleBarHeight = (int)(_appWindow.TitleBar.Height * scale);
+                var windowWidth = _appWindow.Size.Width;
 
-                double left = searchBounds.X - 40 - 8;
-                double right = searchBounds.X + searchBounds.Width + 8 + 32 + 4 + 32;
+                var rects = new List<RectInt32>();
 
-                exX = (int)(left * scale);
-                exRight = (int)(right * scale);
+                int exX, exRight;
+
+                if (_controlsExpanded)
+                {
+                    var searchTransform = SearchBox.TransformToVisual(null);
+                    var searchBounds = searchTransform.TransformBounds(
+                        new Windows.Foundation.Rect(0, 0, SearchBox.ActualWidth, SearchBox.ActualHeight));
+
+                    double left = searchBounds.X - 40 - 8;
+                    double right = searchBounds.X + searchBounds.Width + 8 + 32 + 4 + 32;
+
+                    exX = (int)(left * scale);
+                    exRight = (int)(right * scale);
+                }
+                else
+                {
+                    var transform = SearchBox.TransformToVisual(null);
+                    var bounds = transform.TransformBounds(
+                        new Windows.Foundation.Rect(0, 0, SearchBox.ActualWidth, SearchBox.ActualHeight));
+
+                    exX = (int)(bounds.X * scale);
+                    exRight = exX + (int)(bounds.Width * scale);
+                }
+
+                if (exX > 0)
+                    rects.Add(new RectInt32(0, 0, exX, titleBarHeight));
+                if (exRight < windowWidth)
+                    rects.Add(new RectInt32(exRight, 0, windowWidth - exRight, titleBarHeight));
+
+                if (rects.Count > 0)
+                    _appWindow.TitleBar.SetDragRectangles(rects.ToArray());
             }
-            else
+            catch
             {
-                var transform = SearchBox.TransformToVisual(null);
-                var bounds = transform.TransformBounds(
-                    new Windows.Foundation.Rect(0, 0, SearchBox.ActualWidth, SearchBox.ActualHeight));
-
-                exX = (int)(bounds.X * scale);
-                exRight = exX + (int)(bounds.Width * scale);
+                // WinUI 3 视觉树销毁期间调用 TransformToVisual 极易抛出异常，这里通过 catch 吃掉以保主进程存活
             }
-
-            if (exX > 0)
-                rects.Add(new RectInt32(0, 0, exX, titleBarHeight));
-            if (exRight < windowWidth)
-                rects.Add(new RectInt32(exRight, 0, windowWidth - exRight, titleBarHeight));
-
-            if (rects.Count > 0)
-                _appWindow.TitleBar.SetDragRectangles(rects.ToArray());
         }
 
         private async void LoadText(string uriString)

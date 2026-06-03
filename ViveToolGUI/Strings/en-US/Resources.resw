@@ -409,7 +409,7 @@
     <value>About the Feature ID Organizer</value>
   </data>
   <data name="AboutViVeCore.Text" xml:space="preserve">
-    <value>About ViVeTool Core (Github)</value>
+    <value>About ViVeTool Core (original author on Github)</value>
   </data>
   <data name="Query_NotificationTitle" xml:space="preserve">
     <value>Query Completed</value>
@@ -450,7 +450,7 @@
   <data name="Dialog_Disclaimer.PrimaryButtonText" xml:space="preserve">
     <value>Continue using</value>
   </data>
-  <data name="Dialog_Disclaimer.CloseButtonText" xml:space="preserve">
+  <data name="Dialog_Disclaimer_SecondaryButtonText" xml:space="preserve">
     <value>Exit Application</value>
   </data>
   <data name="Dialog_Disclaimer_Body.Text" xml:space="preserve">
@@ -461,5 +461,17 @@
   </data>
   <data name="BackButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Back</value>
+  </data>
+  <data name="Settings_AboutExpander_DisclaimerButton.Content" xml:space="preserve">
+    <value>Review the Terms of Use Again</value>
+  </data>
+  <data name="BehaviorGroup.Text" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="Settings_NotificationCard.Header" xml:space="preserve">
+    <value>Notification</value>
+  </data>
+  <data name="Settings_NotificationCard.Description" xml:space="preserve">
+    <value>After querying the local Feature ID, send a notification if the window is not focused</value>
   </data>
 </root>
