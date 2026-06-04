@@ -77,10 +77,17 @@
                     <ListView x:Name="FeaturesListView"
                               Grid.Row="1"
                               SelectionMode="Single">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="local:FeatureInfo">
                                 <Grid Padding="12,6"
-                                      ColumnSpacing="12">
+                                      ColumnSpacing="12"
+                                      Background="Transparent">
                                     <Grid.ContextFlyout>
                                         <MenuFlyout Opening="MenuFlyout_Opening">
                                             <MenuFlyoutItem x:Name="MenuEnable" 

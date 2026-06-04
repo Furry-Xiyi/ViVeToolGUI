@@ -48,14 +48,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.DataTable" Version="0.1.251217-build.2433" />
+    <PackageReference Include="CommunityToolkit.WinUI.Behaviors" Version="8.3.260402-preview2" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.3.260402-preview2" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1839" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260508005" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="AppWindows\TextFileViewerWindow.xaml" />
-    <None Remove="Dialogs\DisclaimerDialog.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -77,10 +74,10 @@
     <Page Update="Dialogs\DisclaimerDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <None Update="Strings\en-US\Features.txt">
+    <None Update="Strings\en-US\Features.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Strings\zh-CN\Features.txt">
+    <None Update="Strings\zh-CN\Features.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

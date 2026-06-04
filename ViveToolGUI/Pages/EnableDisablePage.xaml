@@ -156,9 +156,15 @@
                     <ListView x:Name="HistoryListView"
                               Grid.Row="1"
                               SelectionMode="Single">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="local:OperationRecord">
-                                <Grid Padding="12,6" ColumnSpacing="12">
+                                <Grid Padding="12,6" ColumnSpacing="12" Background="Transparent">
                                     <Grid.ContextFlyout>
                                         <MenuFlyout Opening="HistoryMenuFlyout_Opening">
                                             <MenuFlyoutItem x:Name="MenuHistoryEnable"

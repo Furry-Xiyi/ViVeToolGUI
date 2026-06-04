@@ -84,13 +84,56 @@ namespace ViVeToolGUI.Pages
         private string _variantMode = "None";
         private readonly ObservableCollection<OperationRecord> _history = new();
 
+        public static EnableDisablePage Instance { get; private set; }
+
         public EnableDisablePage()
         {
             this.InitializeComponent();
             this.NavigationCacheMode = NavigationCacheMode.Enabled;
             _resourceLoader = ResourceLoader.GetForViewIndependentUse();
             HistoryListView.ItemsSource = _history;
+            Instance = this;
         }
+
+        public async Task<(bool Success, string Message)> RunFeatureCommandAsync(string idCsv, string action)
+        {
+            if (string.IsNullOrWhiteSpace(idCsv))
+                return (false, "empty");
+
+            string arguments = action switch
+            {
+                "Enable" => $"/enable /id:{idCsv}",
+                "Disable" => $"/disable /id:{idCsv}",
+                "Restore" => $"/reset /id:{idCsv}",
+                _ => null
+            };
+            if (arguments == null) return (false, "unknown action");
+
+            try
+            {
+                var result = await MainWindow.ExecuteViVeToolCommandAsync(arguments);
+                if (result.ExitCode == 0)
+                {
+                    OperationLogger.Append(idCsv, action);
+                    if (this.DispatcherQueue != null)
+                        this.DispatcherQueue.TryEnqueue(() => LoadHistory());
+                    return (true, GetSuccessMessage(action));
+                }
+                return (false, GetCommandError(result));
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+
+        private string GetSuccessMessage(string action) => action switch
+        {
+            "Enable" => _resourceLoader.GetString("FeatureStore_EnableSuccess"),
+            "Disable" => _resourceLoader.GetString("FeatureStore_DisableSuccess"),
+            "Restore" => _resourceLoader.GetString("FeatureStore_RestoreSuccess"),
+            _ => ""
+        };
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {

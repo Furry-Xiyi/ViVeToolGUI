@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppDisplayName" xml:space="preserve">
-    <value>ViVeTool GUI</value>
+    <value>Xiyi ViVeTool GUI</value>
   </data>
   <data name="Nav_EnableDisable.Content" xml:space="preserve">
     <value>Enable/Disable</value>
@@ -190,7 +190,7 @@
     <value>Unknown</value>
   </data>
   <data name="Query_Breadcrumb" xml:space="preserve">
-    <value>Query</value>
+    <value>Query Features</value>
   </data>
   <data name="Query_QueryAllButton.Content" xml:space="preserve">
     <value>Start query</value>
@@ -227,6 +227,12 @@
   </data>
   <data name="Menu_CopyFeatureId.Text" xml:space="preserve">
     <value>Copy Feature ID</value>
+  </data>
+  <data name="Menu_CopyText.Text" xml:space="preserve">
+    <value>Copy text</value>
+  </data>
+  <data name="Menu_SelectAll.Text" xml:space="preserve">
+    <value>Select all</value>
   </data>
   <data name="Export_Success" xml:space="preserve">
     <value>Feature overrides exported successfully.</value>

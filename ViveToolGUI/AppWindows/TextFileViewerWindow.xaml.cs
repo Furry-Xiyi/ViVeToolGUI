@@ -7,42 +7,198 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
+using System.ComponentModel;
+using Microsoft.UI.Xaml.Documents;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using Windows.Globalization;
 using Windows.Graphics;
-using Windows.Storage;
+using Windows.System;
+using Windows.System.UserProfile;
 using Windows.UI;
+using Windows.Foundation;
+using Microsoft.UI.Input;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace ViVeToolGUI.AppWindows
 {
+    public sealed partial class FeatureEntry : INotifyPropertyChanged
+    {
+        public string Id { get; set; } = "";
+        public string Variant { get; set; } = "";
+        public string Description { get; set; } = "";
+
+
+        private string _query = "";
+        public string Query { get => _query; set { _query = value; OnChanged(nameof(Query)); } }
+
+        private bool _caseSensitive;
+        public bool CaseSensitive { get => _caseSensitive; set { _caseSensitive = value; OnChanged(nameof(CaseSensitive)); } }
+
+        private int _currentField;
+        public int CurrentField
+        {
+            get => _currentField;
+            set
+            {
+                if (_currentField == value) return;
+                _currentField = value;
+                OnChanged(nameof(IdIsCurrent));
+                OnChanged(nameof(VariantIsCurrent));
+                OnChanged(nameof(DescIsCurrent));
+            }
+        }
+
+        private int _currentMatchPos = -1;
+        public int CurrentMatchPos
+        {
+            get => _currentMatchPos;
+            set { if (_currentMatchPos == value) return; _currentMatchPos = value; OnChanged(nameof(CurrentMatchPos)); }
+        }
+
+        public bool IdIsCurrent => _currentField == 1;
+        public bool VariantIsCurrent => _currentField == 2;
+        public bool DescIsCurrent => _currentField == 3;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+
+    internal static class SearchHighlight
+    {
+        public static readonly DependencyProperty SourceTextProperty =
+            DependencyProperty.RegisterAttached("SourceText", typeof(string), typeof(SearchHighlight), new PropertyMetadata(null, OnPropChanged));
+        public static string GetSourceText(DependencyObject o) => (string)o.GetValue(SourceTextProperty);
+        public static void SetSourceText(DependencyObject o, string v) => o.SetValue(SourceTextProperty, v);
+
+        public static readonly DependencyProperty QueryProperty =
+            DependencyProperty.RegisterAttached("Query", typeof(string), typeof(SearchHighlight), new PropertyMetadata("", OnPropChanged));
+        public static string GetQuery(DependencyObject o) => (string)o.GetValue(QueryProperty);
+        public static void SetQuery(DependencyObject o, string v) => o.SetValue(QueryProperty, v);
+
+        public static readonly DependencyProperty CaseSensitiveProperty =
+            DependencyProperty.RegisterAttached("CaseSensitive", typeof(bool), typeof(SearchHighlight), new PropertyMetadata(false, OnPropChanged));
+        public static bool GetCaseSensitive(DependencyObject o) => (bool)o.GetValue(CaseSensitiveProperty);
+        public static void SetCaseSensitive(DependencyObject o, bool v) => o.SetValue(CaseSensitiveProperty, v);
+
+        public static readonly DependencyProperty IsCurrentFieldProperty =
+            DependencyProperty.RegisterAttached("IsCurrentField", typeof(bool), typeof(SearchHighlight), new PropertyMetadata(false, OnPropChanged));
+        public static bool GetIsCurrentField(DependencyObject o) => (bool)o.GetValue(IsCurrentFieldProperty);
+        public static void SetIsCurrentField(DependencyObject o, bool v) => o.SetValue(IsCurrentFieldProperty, v);
+
+        public static readonly DependencyProperty CurrentMatchPosProperty =
+            DependencyProperty.RegisterAttached("CurrentMatchPos", typeof(int), typeof(SearchHighlight), new PropertyMetadata(-1, OnPropChanged));
+        public static int GetCurrentMatchPos(DependencyObject o) => (int)o.GetValue(CurrentMatchPosProperty);
+        public static void SetCurrentMatchPos(DependencyObject o, int v) => o.SetValue(CurrentMatchPosProperty, v);
+
+        private static void OnPropChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is TextBlock tb) Apply(tb);
+        }
+
+        private static void Apply(TextBlock tb)
+        {
+            string text = GetSourceText(tb) ?? "";
+            tb.Text = text;
+            tb.TextHighlighters.Clear();
+
+            string query = GetQuery(tb);
+            if (string.IsNullOrEmpty(query) || string.IsNullOrEmpty(text)) return;
+
+            var cmp = GetCaseSensitive(tb) ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+            bool isCurrentField = GetIsCurrentField(tb);
+            int currentPos = GetCurrentMatchPos(tb);
+
+            var defaultHl = new TextHighlighter
+            {
+                Background = new SolidColorBrush((Color)Application.Current.Resources["SystemAccentColor"]),
+                Foreground = new SolidColorBrush(Colors.White)
+            };
+            var currentHl = new TextHighlighter
+            {
+                Background = new SolidColorBrush(Color.FromArgb(255, 255, 185, 0)),
+                Foreground = new SolidColorBrush(Colors.Black)
+            };
+
+            int pos = 0;
+            while ((pos = text.IndexOf(query, pos, cmp)) >= 0)
+            {
+                if (isCurrentField && pos == currentPos)
+                    currentHl.Ranges.Add(new TextRange(pos, query.Length));
+                else
+                    defaultHl.Ranges.Add(new TextRange(pos, query.Length));
+                pos += query.Length;
+            }
+            if (defaultHl.Ranges.Count > 0)
+                tb.TextHighlighters.Add(defaultHl);
+            if (currentHl.Ranges.Count > 0)
+                tb.TextHighlighters.Add(currentHl);
+        }
+    }
+
     public sealed partial class TextFileViewerWindow : Window
     {
-        private static TextFileViewerWindow _instance;
+        private static TextFileViewerWindow? _instance;
         private AppWindow _appWindow;
-        private List<(int Start, int Length)> _matches = new();
+        private Windows.System.DispatcherQueueTimer _searchTimer;
+        private List<FeatureEntry> _allItems = new();
+        private List<(int Index, int Field, int Pos)> _matches = new();
+        private int _prevCurrentIndex = -1;
         private int _currentMatchIndex = -1;
-        private string _docText = "";
-        private DispatcherQueueTimer _searchTimer;
-        private bool _controlsExpanded = false;
+        private ScrollViewer? _listScrollViewer;
+        public ObservableCollection<FeatureEntry> FilteredItems { get; } = new();
+        private const int GWLP_WNDPROC = -4;
+        private const uint WM_NCLBUTTONDBLCLK = 0x00A3;
+        private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+        private WndProcDelegate? _newWndProc;
+        private IntPtr _oldWndProc;
+        private IntPtr _hwnd;
 
-        public static void ShowOrActivate(string uriString)
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+        private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, WndProcDelegate newProc);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+        private static extern IntPtr SetWindowLongPtrRaw(IntPtr hWnd, int nIndex, IntPtr newProc);
+
+        [DllImport("user32.dll", EntryPoint = "CallWindowProcW")]
+        private static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        private void DisableDoubleClickMaximize()
+        {
+            _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            _newWndProc = WndProc;
+            _oldWndProc = SetWindowLongPtr(_hwnd, GWLP_WNDPROC, _newWndProc);
+        }
+
+        private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        {
+            if (msg == WM_NCLBUTTONDBLCLK)
+                return IntPtr.Zero;
+            return CallWindowProc(_oldWndProc, hWnd, msg, wParam, lParam);
+        }
+
+        public static void ShowOrActivate()
         {
             if (_instance != null)
             {
                 _instance._appWindow.Show(true);
                 return;
             }
-            _instance = new TextFileViewerWindow(uriString);
+            _instance = new TextFileViewerWindow();
             _instance.Activate();
         }
 
-        public TextFileViewerWindow(string uriString)
+        public TextFileViewerWindow()
         {
             this.InitializeComponent();
 
-            _searchTimer = DispatcherQueue.CreateTimer();
+            _searchTimer = Windows.System.DispatcherQueue.GetForCurrentThread().CreateTimer();
             _searchTimer.Interval = TimeSpan.FromMilliseconds(300);
-            _searchTimer.Tick += (s, e) => { _searchTimer.Stop(); PerformSearch(); };
+            _searchTimer.Tick += (s, e) => { _searchTimer.Stop(); ApplySearch(); };
 
             _appWindow = this.AppWindow;
             _appWindow.SetIcon("Assets\\AppIcon.ico");
@@ -53,11 +209,13 @@ namespace ViVeToolGUI.AppWindows
             _appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
 
             var presenter = OverlappedPresenter.Create();
-            presenter.PreferredMinimumWidth = 800;
-            presenter.PreferredMinimumHeight = 500;
-            presenter.IsMaximizable = false;
             presenter.IsMinimizable = false;
+            presenter.IsMaximizable = false;
+            presenter.IsResizable = true;
+            presenter.PreferredMinimumWidth = 900;
+            presenter.PreferredMinimumHeight = 500;
             _appWindow.SetPresenter(presenter);
+            DisableDoubleClickMaximize();
 
             this.SystemBackdrop = AppThemeManager.CurrentMaterial switch
             {
@@ -67,29 +225,26 @@ namespace ViVeToolGUI.AppWindows
             };
 
             _appWindow.Changed += AppWindow_Changed;
-            this.Closed += TextFileViewerWindow_Closed; // 新增生命周期接管
+            this.Closed += TextFileViewerWindow_Closed;
 
-            LoadText(uriString);
+            LoadCsv();
+            SetLocalizedHeaders();
+
+            FeaturesListView.AddHandler(UIElement.RightTappedEvent, new RightTappedEventHandler(FeaturesListView_RightTapped), true);
         }
 
-        // 处理窗口销毁时的安全清理
         private void TextFileViewerWindow_Closed(object sender, WindowEventArgs args)
         {
             _instance = null;
-
-            // 1. 取消订阅尺寸变化事件，防止关闭瞬间继续计算布局引发异常
             if (_appWindow != null)
-            {
                 _appWindow.Changed -= AppWindow_Changed;
-            }
-
-            // 2. 停掉所有运行中的 DispatcherTimer，防止野指针
-            if (_searchTimer != null)
+            _searchTimer?.Stop();
+            if (_oldWndProc != IntPtr.Zero && _hwnd != IntPtr.Zero)
             {
-                _searchTimer.Stop();
+                SetWindowLongPtrRaw(_hwnd, GWLP_WNDPROC, _oldWndProc);
+                _oldWndProc = IntPtr.Zero;
             }
-
-            // 3. 释放材质背景，防止 WinUI 3 底层回收崩溃
+            _newWndProc = null;
             this.SystemBackdrop = null;
         }
 
@@ -125,9 +280,7 @@ namespace ViVeToolGUI.AppWindows
 
         private void UpdateDragRects()
         {
-            // 加上 IsLoaded 判断，防止销毁阶段进入
             if (_appWindow == null || Content?.XamlRoot == null || SearchBox == null || !SearchBox.IsLoaded) return;
-
             try
             {
                 var scale = Content.XamlRoot.RasterizationScale;
@@ -135,29 +288,21 @@ namespace ViVeToolGUI.AppWindows
                 var windowWidth = _appWindow.Size.Width;
 
                 var rects = new List<RectInt32>();
-
                 int exX, exRight;
 
                 if (_controlsExpanded)
                 {
-                    var searchTransform = SearchBox.TransformToVisual(null);
-                    var searchBounds = searchTransform.TransformBounds(
-                        new Windows.Foundation.Rect(0, 0, SearchBox.ActualWidth, SearchBox.ActualHeight));
-
-                    double left = searchBounds.X - 40 - 8;
-                    double right = searchBounds.X + searchBounds.Width + 8 + 32 + 4 + 32;
-
-                    exX = (int)(left * scale);
-                    exRight = (int)(right * scale);
+                    var b = ControlContainer.TransformToVisual(null).TransformBounds(
+                        new Windows.Foundation.Rect(0, 0, ControlContainer.ActualWidth, ControlContainer.ActualHeight));
+                    exX = (int)(b.X * scale);
+                    exRight = (int)((b.X + b.Width) * scale);
                 }
                 else
                 {
-                    var transform = SearchBox.TransformToVisual(null);
-                    var bounds = transform.TransformBounds(
+                    var b = SearchBox.TransformToVisual(null).TransformBounds(
                         new Windows.Foundation.Rect(0, 0, SearchBox.ActualWidth, SearchBox.ActualHeight));
-
-                    exX = (int)(bounds.X * scale);
-                    exRight = exX + (int)(bounds.Width * scale);
+                    exX = (int)(b.X * scale);
+                    exRight = exX + (int)(b.Width * scale);
                 }
 
                 if (exX > 0)
@@ -168,21 +313,143 @@ namespace ViVeToolGUI.AppWindows
                 if (rects.Count > 0)
                     _appWindow.TitleBar.SetDragRectangles(rects.ToArray());
             }
-            catch
+            catch { }
+        }
+
+        private void HeaderTable_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (HeaderDataTable == null || ColDescriptionColumn == null
+                || ColIdColumn == null || ColVariantColumn == null)
+                return;
+
+            double total = HeaderDataTable.ActualWidth;
+            if (total <= 0)
+                return;
+
+            double idW = ColIdColumn.ActualWidth > 0 ? ColIdColumn.ActualWidth : ColIdColumn.DesiredWidth.Value;
+            double varW = ColVariantColumn.ActualWidth > 0 ? ColVariantColumn.ActualWidth : ColVariantColumn.DesiredWidth.Value;
+
+            double available = total - idW - varW - 2 - HeaderDataTable.ColumnSpacing * 3;
+            if (available < 40) available = 40;
+
+            if (Math.Abs(ColDescriptionColumn.DesiredWidth.Value - available) < 0.5
+                && ColDescriptionColumn.DesiredWidth.GridUnitType == GridUnitType.Pixel)
+                return;
+
+            ColDescriptionColumn.DesiredWidth = new GridLength(available, GridUnitType.Pixel);
+
+            this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
             {
-                // WinUI 3 视觉树销毁期间调用 TransformToVisual 极易抛出异常，这里通过 catch 吃掉以保主进程存活
+                InvalidateAllDataRows(FeaturesListView);
+            });
+        }
+
+        private static void InvalidateAllDataRows(DependencyObject root)
+        {
+            if (root == null) return;
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child is CommunityToolkit.WinUI.Controls.DataRow row)
+                    row.InvalidateMeasure();
+                InvalidateAllDataRows(child);
             }
         }
 
-        private async void LoadText(string uriString)
+        private void SetLocalizedHeaders()
         {
-            var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri(uriString));
-            var rawText = await FileIO.ReadTextAsync(file);
-            ContentRichEdit.IsReadOnly = false;
-            ContentRichEdit.Document.SetText(Microsoft.UI.Text.TextSetOptions.None, rawText);
-            ContentRichEdit.IsReadOnly = true;
-            ContentRichEdit.Document.GetText(Microsoft.UI.Text.TextGetOptions.UseCrlf, out _docText);
+            bool isChinese = IsChinese();
+            ColIdHeader.Text = "ID";
+            ColVariantHeader.Text = isChinese ? "\u53D8\u4F53" : "Variant";
+            ColDescriptionHeader.Text = isChinese ? "\u63CF\u8FF0" : "Description";
         }
+
+        private void LoadCsv()
+        {
+            string folder = GetFeatureTextFolder();
+            string basePath = AppContext.BaseDirectory;
+            string csvPath = Path.Combine(basePath, "Strings", folder, "Features.csv");
+
+            if (!File.Exists(csvPath))
+                return;
+
+            var lines = File.ReadAllLines(csvPath);
+            for (int i = 1; i < lines.Length; i++)
+            {
+                var entry = ParseCsvLine(lines[i]);
+                if (entry != null)
+                {
+                    _allItems.Add(entry);
+                }
+            }
+
+            foreach (var item in _allItems)
+                FilteredItems.Add(item);
+        }
+
+        private static FeatureEntry? ParseCsvLine(string line)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+                return null;
+
+            var fields = new List<string>();
+            bool inQuotes = false;
+            var current = new System.Text.StringBuilder();
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+                if (inQuotes)
+                {
+                    if (c == '"')
+                    {
+                        if (i + 1 < line.Length && line[i + 1] == '"')
+                        {
+                            current.Append('"');
+                            i++;
+                        }
+                        else
+                        {
+                            inQuotes = false;
+                        }
+                    }
+                    else
+                    {
+                        current.Append(c);
+                    }
+                }
+                else
+                {
+                    if (c == '"')
+                    {
+                        inQuotes = true;
+                    }
+                    else if (c == ',')
+                    {
+                        fields.Add(current.ToString());
+                        current.Clear();
+                    }
+                    else
+                    {
+                        current.Append(c);
+                    }
+                }
+            }
+            fields.Add(current.ToString());
+
+            if (fields.Count < 3)
+                return null;
+
+            return new FeatureEntry
+            {
+                Id = fields[0].Trim(),
+                Variant = fields[1].Trim(),
+                Description = fields[2].Trim()
+            };
+        }
+
+        private bool _controlsExpanded = false;
 
         private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
         {
@@ -211,9 +478,138 @@ namespace ViVeToolGUI.AppWindows
             }
         }
 
-        private void Storyboard_Completed(object sender, object e)
+        private void Storyboard_Completed(object sender, object e) => UpdateDragRects();
+
+        private void MatchCaseToggle_Click(object sender, RoutedEventArgs e) => ApplySearch();
+
+        private void ApplySearch()
         {
-            UpdateDragRects();
+            string query = SearchBox.Text;
+            bool caseSensitive = MatchCaseToggle.IsChecked == true;
+            var cmp = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+            _matches.Clear();
+            _currentMatchIndex = -1;
+            _prevCurrentIndex = -1;
+
+            foreach (var item in FilteredItems)
+            {
+                item.CaseSensitive = caseSensitive;
+                item.Query = query;
+                item.CurrentField = 0;
+                item.CurrentMatchPos = -1;
+            }
+
+            if (string.IsNullOrEmpty(query))
+            {
+                MatchCountText.Text = "";
+                return;
+            }
+
+            for (int i = 0; i < FilteredItems.Count; i++)
+            {
+                var item = FilteredItems[i];
+                AddMatchesIn(item.Id, i, 1, query, cmp);
+                AddMatchesIn(item.Variant, i, 2, query, cmp);
+                AddMatchesIn(item.Description, i, 3, query, cmp);
+            }
+
+            if (_matches.Count > 0)
+            {
+                _currentMatchIndex = 0;
+                NavigateToCurrentMatch();
+            }
+            else
+            {
+                MatchCountText.Text = "0/0";
+            }
+        }
+
+        private void AddMatchesIn(string text, int idx, int field, string query, StringComparison cmp)
+        {
+            int pos = 0;
+            while ((pos = text.IndexOf(query, pos, cmp)) >= 0)
+            {
+                _matches.Add((idx, field, pos));
+                pos += query.Length;
+            }
+        }
+
+        private void NavigateToCurrentMatch()
+        {
+            if (_matches.Count == 0 || _currentMatchIndex < 0) return;
+
+            if (_prevCurrentIndex >= 0 && _prevCurrentIndex < FilteredItems.Count)
+            {
+                FilteredItems[_prevCurrentIndex].CurrentField = 0;
+                FilteredItems[_prevCurrentIndex].CurrentMatchPos = -1;
+            }
+
+            var (idx, field, pos) = _matches[_currentMatchIndex];
+            var item = FilteredItems[idx];
+            item.CurrentField = field;
+            item.CurrentMatchPos = pos;
+            _prevCurrentIndex = idx;
+            FeaturesListView.ScrollIntoView(item);
+            MatchCountText.Text = $"{_currentMatchIndex + 1}/{_matches.Count}";
+
+            this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                var sv = GetListScrollViewer();
+                if (sv == null || HeaderBorder == null) return;
+                if (FeaturesListView.ContainerFromItem(item) is not ListViewItem container) return;
+
+                try
+                {
+                    var p = container.TransformToVisual(sv).TransformPoint(new Point(0, 0));
+                    double headerH = HeaderBorder.ActualHeight;
+                    if (p.Y < headerH)
+                    {
+                        double delta = headerH - p.Y + 4;
+                        sv.ChangeView(null, Math.Max(0, sv.VerticalOffset - delta), null, true);
+                    }
+                    else if (p.Y + container.ActualHeight > sv.ViewportHeight)
+                    {
+                        double delta = p.Y + container.ActualHeight - sv.ViewportHeight + 4;
+                        sv.ChangeView(null, sv.VerticalOffset + delta, null, true);
+                    }
+                }
+                catch { }
+            });
+        }
+
+        private ScrollViewer? GetListScrollViewer()
+        {
+            if (_listScrollViewer != null) return _listScrollViewer;
+            _listScrollViewer = FindDescendant<ScrollViewer>(FeaturesListView);
+            return _listScrollViewer;
+        }
+
+        private static T? FindDescendant<T>(DependencyObject root) where T : DependencyObject
+        {
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++)
+            {
+                var c = VisualTreeHelper.GetChild(root, i);
+                if (c is T t) return t;
+                var nested = FindDescendant<T>(c);
+                if (nested != null) return nested;
+            }
+            return null;
+        }
+
+        private void PrevButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_matches.Count == 0) return;
+            _currentMatchIndex = (_currentMatchIndex - 1 + _matches.Count) % _matches.Count;
+            NavigateToCurrentMatch();
+        }
+
+        private void NextButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_matches.Count == 0) return;
+            _currentMatchIndex = (_currentMatchIndex + 1) % _matches.Count;
+            NavigateToCurrentMatch();
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -222,84 +618,196 @@ namespace ViVeToolGUI.AppWindows
             _searchTimer.Start();
         }
 
-        private void PerformSearch()
+        private static bool IsChinese()
         {
-            _matches.Clear();
-            _currentMatchIndex = -1;
-
-            ContentRichEdit.IsReadOnly = false;
-            var doc = ContentRichEdit.Document;
-
-            doc.GetText(Microsoft.UI.Text.TextGetOptions.UseCrlf, out _docText);
-
-            var wholeRange = doc.GetRange(0, Microsoft.UI.Text.TextConstants.MaxUnitCount);
-            wholeRange.CharacterFormat.BackgroundColor = Colors.Transparent;
-            wholeRange.CharacterFormat.ForegroundColor =
-                AppThemeManager.GetIsDarkTheme() ? Colors.White : Colors.Black;
-
-            var query = SearchBox.Text;
-            if (!string.IsNullOrEmpty(query))
+            string language = "";
+            try
             {
-                var comparison = MatchCaseToggle.IsChecked == true
-                    ? StringComparison.Ordinal
-                    : StringComparison.OrdinalIgnoreCase;
-
-                int searchStart = 0;
-                while ((searchStart = _docText.IndexOf(query, searchStart, comparison)) != -1)
-                {
-                    int docStart = ConvertToDocIndex(searchStart);
-                    int docEnd = ConvertToDocIndex(searchStart + query.Length);
-                    _matches.Add((docStart, docEnd - docStart));
-
-                    var range = doc.GetRange(docStart, docEnd);
-                    range.CharacterFormat.BackgroundColor =
-                        (Color)Application.Current.Resources["SystemAccentColor"];
-                    range.CharacterFormat.ForegroundColor = Colors.White;
-                    searchStart += query.Length;
-                }
-
-                if (_matches.Count > 0)
-                {
-                    _currentMatchIndex = 0;
-                    HighlightCurrentMatch();
-                }
+                language = GlobalizationPreferences.Languages.FirstOrDefault() ?? "";
             }
-            ContentRichEdit.IsReadOnly = true;
+            catch { }
+            return language.StartsWith("zh", StringComparison.OrdinalIgnoreCase);
         }
 
-        private int ConvertToDocIndex(int crlfIndex)
+        private static string GetFeatureTextFolder()
         {
-            int crCount = 0;
-            for (int i = 0; i < crlfIndex && i < _docText.Length; i++)
+            return IsChinese() ? "zh-CN" : "en-US";
+        }
+
+        private static readonly System.Text.RegularExpressions.Regex _idPattern =
+            new(@"^\s*\d{8,}(\s*,\s*\d{8,})*\s*$", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+        private void FeaturesListView_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            if (e.OriginalSource is not DependencyObject src) return;
+
+            var item = FindAncestor<ListViewItem>(src) ?? FindItemAtPoint(e.GetPosition(null));
+            if (item == null) return;
+            if (item.Content is not FeatureEntry fe) return;
+
+            string selectedText = GetSelectedTextFromRow(item);
+            bool hasSelection = !string.IsNullOrEmpty(selectedText);
+            bool isIdSelection = hasSelection && _idPattern.IsMatch(selectedText);
+
+            string idCsv = isIdSelection ? NormalizeIdCsv(selectedText) : fe.Id;
+            string copyContent = hasSelection ? selectedText : fe.Id;
+            bool isCopyId = !hasSelection || isIdSelection;
+            TextBlock copySourceTb = hasSelection ? FindFocusedTextBlock(item) : null;
+
+            e.Handled = true;
+            ShowRowCommandBarFlyout(item, e.GetPosition(item), idCsv, copyContent, isCopyId, copySourceTb);
+        }
+
+        private ListViewItem FindItemAtPoint(Point hostPoint)
+        {
+            try
             {
-                if (_docText[i] == '\r' && i + 1 < _docText.Length && _docText[i + 1] == '\n')
-                    crCount++;
+                var elements = VisualTreeHelper.FindElementsInHostCoordinates(hostPoint, FeaturesListView);
+                foreach (var el in elements)
+                    if (el is ListViewItem lvi) return lvi;
             }
-            return crlfIndex - crCount;
+            catch { }
+            return null;
         }
 
-        private void HighlightCurrentMatch()
+        private static T FindAncestor<T>(DependencyObject d) where T : DependencyObject
         {
-            var match = _matches[_currentMatchIndex];
-            var doc = ContentRichEdit.Document;
-            doc.Selection.SetRange(match.Start, match.Start + match.Length);
-            doc.Selection.ScrollIntoView(Microsoft.UI.Text.PointOptions.Start);
+            while (d != null)
+            {
+                if (d is T t) return t;
+                d = VisualTreeHelper.GetParent(d);
+            }
+            return null;
         }
 
-        private void MatchCaseToggle_Click(object sender, RoutedEventArgs e) => PerformSearch();
-
-        private void PrevButton_Click(object sender, RoutedEventArgs e)
+        private static string GetSelectedTextFromRow(DependencyObject root)
         {
-            if (_matches.Count == 0) return;
-            _currentMatchIndex = (_currentMatchIndex - 1 + _matches.Count) % _matches.Count;
-            HighlightCurrentMatch();
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++)
+            {
+                var c = VisualTreeHelper.GetChild(root, i);
+                if (c is TextBlock tb && !string.IsNullOrEmpty(tb.SelectedText))
+                    return tb.SelectedText;
+                var inner = GetSelectedTextFromRow(c);
+                if (!string.IsNullOrEmpty(inner)) return inner;
+            }
+            return null;
         }
 
-        private void NextButton_Click(object sender, RoutedEventArgs e)
+        private static TextBlock FindFocusedTextBlock(DependencyObject root)
         {
-            if (_matches.Count == 0) return;
-            _currentMatchIndex = (_currentMatchIndex + 1) % _matches.Count;
-            HighlightCurrentMatch();
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++)
+            {
+                var c = VisualTreeHelper.GetChild(root, i);
+                if (c is TextBlock tb && !string.IsNullOrEmpty(tb.SelectedText))
+                    return tb;
+                var inner = FindFocusedTextBlock(c);
+                if (inner != null) return inner;
+            }
+            return null;
+        }
+
+        private static string NormalizeIdCsv(string raw)
+        {
+            var parts = raw.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < parts.Length; i++)
+                parts[i] = parts[i].Trim();
+            return string.Join(",", parts);
+        }
+
+        private void ShowRowCommandBarFlyout(FrameworkElement target, Point pos, string idCsv, string copyContent, bool isCopyId, TextBlock copySourceTb)
+        {
+            var rl = new ResourceLoader();
+
+            var flyout = new CommandBarFlyout { Placement = FlyoutPlacementMode.RightEdgeAlignedTop, AlwaysExpanded = true };
+
+            var enableBtn = new AppBarButton { Label = rl.GetString("Menu_EnableFeature/Text"), Icon = new SymbolIcon(Symbol.Accept) };
+            enableBtn.Click += async (s, e) => await ExecuteFeatureAsync(idCsv, "Enable");
+            var disableBtn = new AppBarButton { Label = rl.GetString("Menu_DisableFeature/Text"), Icon = new SymbolIcon(Symbol.Cancel) };
+            disableBtn.Click += async (s, e) => await ExecuteFeatureAsync(idCsv, "Disable");
+            var restoreBtn = new AppBarButton { Label = rl.GetString("Menu_RestoreFeature/Text"), Icon = new SymbolIcon(Symbol.Undo) };
+            restoreBtn.Click += async (s, e) => await ExecuteFeatureAsync(idCsv, "Restore");
+
+            flyout.PrimaryCommands.Add(enableBtn);
+            flyout.PrimaryCommands.Add(disableBtn);
+            flyout.PrimaryCommands.Add(restoreBtn);
+
+            string copyLabel = isCopyId
+                ? rl.GetString("Menu_CopyFeatureId/Text")
+                : rl.GetString("Menu_CopyText/Text");
+            var copyBtn = new AppBarButton { Label = copyLabel, Icon = new SymbolIcon(Symbol.Copy) };
+            copyBtn.Click += (s, e) =>
+            {
+                var pkg = new Windows.ApplicationModel.DataTransfer.DataPackage();
+                pkg.SetText(copyContent);
+                Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(pkg);
+            };
+            flyout.SecondaryCommands.Add(copyBtn);
+
+            if (copySourceTb != null)
+            {
+                var selectAllBtn = new AppBarButton { Label = rl.GetString("Menu_SelectAll/Text"), Icon = new FontIcon { Glyph = "\uE8B3" } };
+                selectAllBtn.Click += (s, e) => copySourceTb.SelectAll();
+                flyout.SecondaryCommands.Add(selectAllBtn);
+            }
+
+            flyout.ShowAt(target, new FlyoutShowOptions { Position = pos });
+        }
+
+        private async System.Threading.Tasks.Task ExecuteFeatureAsync(string idCsv, string action)
+        {
+            var rl = new ResourceLoader();
+            string busyText = action switch
+            {
+                "Enable" => rl.GetString("EnableDisable_EnableButton/Text"),
+                "Disable" => rl.GetString("EnableDisable_DisableButton/Text"),
+                "Restore" => rl.GetString("EnableDisable_RestoreButton/Text"),
+                _ => ""
+            };
+            ShowLoadingOverlay(busyText);
+            MainWindow.Instance?.ShowTaskbarIndeterminate();
+
+            var page = ViVeToolGUI.Pages.EnableDisablePage.Instance;
+            if (page == null)
+            {
+                HideLoadingOverlay();
+                MainWindow.Instance?.ShowTaskbarError();
+                await ShowErrorAsync("EnableDisablePage not initialized.");
+                return;
+            }
+
+            var (ok, msg) = await page.RunFeatureCommandAsync(idCsv, action);
+            HideLoadingOverlay();
+
+            if (ok)
+            {
+                MainWindow.Instance?.ShowTaskbarCompleted();
+                var dlg = new ViVeToolGUI.Dialogs.SuccessDialog(msg) { XamlRoot = this.Content.XamlRoot };
+                await dlg.ShowAsync();
+            }
+            else
+            {
+                MainWindow.Instance?.ShowTaskbarError();
+                await ShowErrorAsync(msg);
+            }
+        }
+
+        private async System.Threading.Tasks.Task ShowErrorAsync(string message)
+        {
+            var dlg = new ViVeToolGUI.Dialogs.ErrorDialog(message) { XamlRoot = this.Content.XamlRoot };
+            await dlg.ShowAsync();
+        }
+
+        private void ShowLoadingOverlay(string text)
+        {
+            if (LoadingText != null) LoadingText.Text = text ?? "";
+            if (LoadingOverlay != null) LoadingOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void HideLoadingOverlay()
+        {
+            if (LoadingOverlay != null) LoadingOverlay.Visibility = Visibility.Collapsed;
         }
     }
 }

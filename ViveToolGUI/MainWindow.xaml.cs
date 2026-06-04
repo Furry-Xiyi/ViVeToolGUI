@@ -233,17 +233,20 @@ namespace ViVeToolGUI
             }
         }
 
+        private bool _settingsPressed;
+
         private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             if (args.IsSettingsInvoked)
             {
-                // 如果已经选中了设置，又点了一次：再次触发实心旋转动画
-                if (NavView.SelectedItem == NavView.SettingsItem)
-                {
-                    PlaySolidSettingsSpinAnimation((NavigationViewItem)NavView.SettingsItem);
-                }
                 if (ContentFrame.CurrentSourcePageType != typeof(SettingsPage))
                     ContentFrame.Navigate(typeof(SettingsPage), null, args.RecommendedNavigationTransitionInfo);
+                var settingsItem = (NavigationViewItem)NavView.SettingsItem;
+                if (_settingsPressed && settingsItem?.Icon is FontIcon fi && fi.Glyph == "\uF8B0")
+                {
+                    _settingsPressed = false;
+                    PlaySolidSettingsSpinAnimation(settingsItem);
+                }
                 return;
             }
             string tag = args.InvokedItemContainer?.Tag?.ToString();
@@ -253,7 +256,6 @@ namespace ViVeToolGUI
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             var selectedItem = args.SelectedItemContainer as NavigationViewItem;
-            // 1. 常规项图标（实心/空心切换）
             foreach (var item in NavView.MenuItems.OfType<NavigationViewItem>())
             {
                 string tag = item.Tag?.ToString();
@@ -266,70 +268,123 @@ namespace ViVeToolGUI
                         : _normalGlyphs.GetValueOrDefault(tag, fontIcon.Glyph);
                 }
             }
-            // 2. 自带的 Settings 实心旋转逻辑
             var settingsItem = (NavigationViewItem)NavView.SettingsItem;
             if (settingsItem != null)
             {
-                if (args.IsSettingsSelected)
+                bool isLeftMode = NavView.PaneDisplayMode != NavigationViewPaneDisplayMode.Top;
+                if (args.IsSettingsSelected && isLeftMode)
                 {
-                    // 切到设置页，变成实心并播放自制旋转动画
-                    PlaySolidSettingsSpinAnimation(settingsItem);
+                    _ = SwitchToSolidSettingsAfterDelay(settingsItem);
                 }
-                else
+                else if (!args.IsSettingsSelected)
                 {
-                    // 切走时强制还原为自带的空心动画图标，保证未选中时悬浮(Hover)有原版动画
                     if (settingsItem.Icon is not AnimatedIcon)
                     {
                         settingsItem.Icon = new AnimatedIcon
                         {
                             Source = new Microsoft.UI.Xaml.Controls.AnimatedVisuals.AnimatedSettingsVisualSource(),
-                            FallbackIconSource = new FontIconSource { Glyph = "\uE713" } // 空心齿轮
+                            FallbackIconSource = new FontIconSource { Glyph = "\uE713" }
                         };
                     }
                 }
             }
         }
 
+
+        private void HookSettingsPointerHandlers(NavigationViewItem settingsItem)
+        {
+            settingsItem.PointerPressed -= SettingsItem_PointerPressed;
+            settingsItem.PointerReleased -= SettingsItem_PointerReleased;
+            settingsItem.PointerCanceled -= SettingsItem_PointerReleased;
+            settingsItem.PointerPressed += SettingsItem_PointerPressed;
+            settingsItem.PointerReleased += SettingsItem_PointerReleased;
+            settingsItem.PointerCanceled += SettingsItem_PointerReleased;
+        }
+
+        private void SettingsItem_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            if (!e.GetCurrentPoint((UIElement)sender).Properties.IsLeftButtonPressed) return;
+            var settingsItem = (NavigationViewItem)sender;
+            if (settingsItem.Icon is FontIcon fontIcon && fontIcon.Glyph == "\uF8B0")
+            {
+                _settingsPressed = true;
+                if (fontIcon.RenderTransform is not Microsoft.UI.Xaml.Media.RotateTransform rt)
+                {
+                    rt = new Microsoft.UI.Xaml.Media.RotateTransform();
+                    fontIcon.RenderTransform = rt;
+                    fontIcon.RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5);
+                }
+                double currentAngle = rt.Angle;
+                var sb = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
+                var anim = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+                {
+                    From = currentAngle,
+                    To = currentAngle - 15,
+                    Duration = new Duration(TimeSpan.FromMilliseconds(150)),
+                    EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase { EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut }
+                };
+                Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(anim, rt);
+                Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(anim, "Angle");
+                sb.Children.Add(anim);
+                sb.Begin();
+            }
+        }
+
+        private void SettingsItem_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            if (!_settingsPressed) return;
+            _settingsPressed = false;
+            var settingsItem = (NavigationViewItem)sender;
+            if (settingsItem.Icon is FontIcon fontIcon && fontIcon.Glyph == "\uF8B0")
+            {
+                PlaySolidSettingsSpinAnimation(settingsItem);
+            }
+        }
+
+        private async Task SwitchToSolidSettingsAfterDelay(NavigationViewItem settingsItem)
+        {
+            await Task.Delay(600);
+            if (NavView.SelectedItem != NavView.SettingsItem) return;
+            var solidIcon = new FontIcon
+            {
+                Glyph = "\uF8B0",
+                FontSize = 18,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5),
+                RenderTransform = new Microsoft.UI.Xaml.Media.RotateTransform()
+            };
+            settingsItem.Icon = solidIcon;
+            HookSettingsPointerHandlers(settingsItem);
+        }
+
         private void PlaySolidSettingsSpinAnimation(NavigationViewItem settingsItem)
         {
             if (settingsItem == null) return;
-            // 设置为实心 FontIcon 并赋予中心旋转变换特性
             var fontIcon = settingsItem.Icon as FontIcon;
-            if (fontIcon == null || fontIcon.Glyph != "\uF8B0")
-            {
-                fontIcon = new FontIcon
-                {
-                    Glyph = "\uF8B0", // 实心齿轮
-                    FontSize = 18,
-                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                    RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5),
-                    RenderTransform = new Microsoft.UI.Xaml.Media.RotateTransform()
-                };
-                settingsItem.Icon = fontIcon;
-            }
-            // 获取或初始化 RotateTransform
+            if (fontIcon == null || fontIcon.Glyph != "\uF8B0") return;
             if (fontIcon.RenderTransform is not Microsoft.UI.Xaml.Media.RotateTransform rotateTransform)
             {
                 rotateTransform = new Microsoft.UI.Xaml.Media.RotateTransform();
                 fontIcon.RenderTransform = rotateTransform;
                 fontIcon.RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5);
             }
-            // 创建动画：转动 60 度，配合 CubicEase 模拟原版的减速物理手感
+            double currentAngle = rotateTransform.Angle;
+            double targetAngle = currentAngle + 360 + (360 - (currentAngle % 360 + 360) % 360);
             var sb = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
             var anim = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
             {
-                From = 0,
-                To = 60,
-                Duration = new Duration(TimeSpan.FromMilliseconds(400)),
-                EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase
-                {
-                    EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut
-                }
+                From = currentAngle,
+                To = targetAngle,
+                Duration = new Duration(TimeSpan.FromMilliseconds(900)),
+                EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase { EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut }
             };
             Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(anim, rotateTransform);
             Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(anim, "Angle");
-
             sb.Children.Add(anim);
+            sb.Completed += (s, e) =>
+            {
+                rotateTransform.Angle = 0;
+            };
             sb.Begin();
         }
 
@@ -364,13 +419,17 @@ namespace ViVeToolGUI
             var targetTitleMargin = ContentFrame.CanGoBack
                 ? new Thickness(50, 0, 0, 0)
                 : new Thickness(18, 0, 0, 0);
+            var targetContentMargin = ContentFrame.CanGoBack
+                ? new Thickness(78, 13, 0, 0)
+                : new Thickness(46, 13, 0, 0);
 
-            if (!ImgAppIcon.Margin.Equals(targetImgMargin) || !TitleBarArea.Margin.Equals(targetTitleMargin))
+            if (!ImgAppIcon.Margin.Equals(targetImgMargin) || !TitleBarArea.Margin.Equals(targetTitleMargin) || !TitleBarContent.Margin.Equals(targetContentMargin))
             {
                 this.DispatcherQueue.TryEnqueue(() =>
                 {
                     ImgAppIcon.Margin = targetImgMargin;
                     TitleBarArea.Margin = targetTitleMargin;
+                    TitleBarContent.Margin = targetContentMargin;
                 });
             }
         }

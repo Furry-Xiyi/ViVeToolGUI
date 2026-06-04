@@ -15,33 +15,34 @@
                 Click="BackButton_Click"
                 Canvas.ZIndex="1"/>
 
-        <Image x:Name="ImgAppIcon" Width="16" Height="16" VerticalAlignment="Top" HorizontalAlignment="Left"
-               Margin="18,16,0,0" IsHitTestVisible="False" Canvas.ZIndex="20"/>
-
         <TitleBar x:Name="TitleBarArea" VerticalAlignment="Top"
                   Margin="18,0,0,0"
                   IsBackButtonVisible="False"
-                  BackRequested="TitleBar_BackRequested"
-                  Canvas.ZIndex="20">
+                  BackRequested="TitleBar_BackRequested">
             <TitleBar.IconSource>
                 <ImageIconSource/>
             </TitleBar.IconSource>
-            <TitleBar.LeftHeader>
-                <StackPanel x:Name="TitleBarContent"
-                            Orientation="Horizontal"
-                            VerticalAlignment="Center"
-                            Margin="28,0,0,0">
-                    <TextBlock x:Name="TitleBarAppName"
-                               VerticalAlignment="Center"
-                               FontSize="12"/>
-                    <TextBlock x:Uid="SettingsTitle"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               Margin="4,0,0,0"
-                               VerticalAlignment="Center"/>
-                </StackPanel>
-            </TitleBar.LeftHeader>
         </TitleBar>
+
+        <Image x:Name="ImgAppIcon" Width="16" Height="16" VerticalAlignment="Top" HorizontalAlignment="Left"
+               Margin="18,16,0,0" IsHitTestVisible="False" Canvas.ZIndex="0"/>
+
+        <StackPanel x:Name="TitleBarContent"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Left"
+                    Margin="46,13,0,0"
+                    IsHitTestVisible="False"
+                    Canvas.ZIndex="0">
+            <TextBlock x:Name="TitleBarAppName"
+                       VerticalAlignment="Center"
+                       FontSize="12"/>
+            <TextBlock x:Uid="SettingsTitle"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Margin="4,0,0,0"
+                       VerticalAlignment="Center"/>
+        </StackPanel>
 
         <Grid x:Name="NavViewContainer" Margin="0,32,0,0" Canvas.ZIndex="0">
             <NavigationView x:Name="NavView"

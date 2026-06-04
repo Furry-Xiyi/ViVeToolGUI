@@ -409,12 +409,7 @@ namespace ViVeToolGUI.Pages
 
         private void ViewButton_Click(object sender, RoutedEventArgs e)
         {
-            string folder = GetFeatureTextFolder();
-            // 确保这里的 Uri 格式是正确的 ms-appx
-            string uriPath = $"ms-appx:///Strings/{folder}/Features.txt";
-
-            var viewerWindow = new AppWindows.TextFileViewerWindow(uriPath);
-            viewerWindow.Activate();
+            AppWindows.TextFileViewerWindow.ShowOrActivate();
         }
 
         private string GetFeatureTextFolder()
