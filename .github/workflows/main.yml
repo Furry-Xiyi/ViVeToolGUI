@@ -1,0 +1,38 @@
+name: Publish Features CSV
+
+on:
+  push:
+    paths:
+      - 'ViveToolGUI/Strings/en-US/Features.csv'
+      - 'ViveToolGUI/Strings/zh-CN/Features.csv'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          repository: Furry-Xiyi/ViVe-Feature-ID
+          token: ${{ secrets.DEPLOY_TOKEN }}
+          path: target
+
+      - name: Copy CSV files
+        run: |
+          mkdir -p target/en-US target/zh-CN
+          cp ViveToolGUI/Strings/en-US/Features.csv target/en-US/Features.csv
+          cp ViveToolGUI/Strings/zh-CN/Features.csv target/zh-CN/Features.csv
+
+      - name: Commit and push
+        run: |
+          cd target
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "Update Features.csv"
+          git push
