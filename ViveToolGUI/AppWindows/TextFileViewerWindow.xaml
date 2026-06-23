@@ -16,24 +16,69 @@
 
         <Grid.Resources>
             <ResourceDictionary>
+                <MenuFlyout x:Name="RowContextMenu" Placement="RightEdgeAlignedTop">
+                    <MenuFlyoutItem x:Name="CmdEnable" x:Uid="Menu_EnableFeature" Click="CmdEnable_Click">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xE73E;"/>
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="CmdDisable" x:Uid="Menu_DisableFeature" Click="CmdDisable_Click">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xE711;"/>
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="CmdRestore" x:Uid="Menu_RestoreFeature" Click="CmdRestore_Click">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xE777;"/>
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem x:Name="CmdCopy" x:Uid="Menu_CopyText" Click="CmdCopy_Click">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xE8C8;"/>
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="CmdSelectAll" x:Uid="Menu_SelectAll" Click="CmdSelectAll_Click">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xE8B3;"/>
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                </MenuFlyout>
                 <Storyboard x:Name="ShowControlsStoryboard">
-                <DoubleAnimation Storyboard.TargetName="MatchCaseToggle" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
-                <DoubleAnimation Storyboard.TargetName="NavButtonsPanel" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
-                <DoubleAnimation Storyboard.TargetName="MatchCaseToggleTransform" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.2"/>
-                <DoubleAnimation Storyboard.TargetName="NavButtonsTransform" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.2"/>
-            </Storyboard>
-            <Storyboard x:Name="HideControlsStoryboard">
-                <DoubleAnimation Storyboard.TargetName="MatchCaseToggle" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
-                <DoubleAnimation Storyboard.TargetName="NavButtonsPanel" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
-                <DoubleAnimation Storyboard.TargetName="MatchCaseToggleTransform" Storyboard.TargetProperty="X" To="36" Duration="0:0:0.15"/>
-                <DoubleAnimation Storyboard.TargetName="NavButtonsTransform" Storyboard.TargetProperty="X" To="-36" Duration="0:0:0.15"/>
-            </Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="MatchCaseToggle" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
+                    <DoubleAnimation Storyboard.TargetName="NavButtonsPanel" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
+                    <DoubleAnimation Storyboard.TargetName="MatchCaseToggleTransform" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.2"/>
+                    <DoubleAnimation Storyboard.TargetName="NavButtonsTransform" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.2"/>
+                </Storyboard>
+                <Storyboard x:Name="HideControlsStoryboard">
+                    <DoubleAnimation Storyboard.TargetName="MatchCaseToggle" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
+                    <DoubleAnimation Storyboard.TargetName="NavButtonsPanel" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15"/>
+                    <DoubleAnimation Storyboard.TargetName="MatchCaseToggleTransform" Storyboard.TargetProperty="X" To="36" Duration="0:0:0.15"/>
+                    <DoubleAnimation Storyboard.TargetName="NavButtonsTransform" Storyboard.TargetProperty="X" To="-36" Duration="0:0:0.15"/>
+                </Storyboard>
+                <Storyboard x:Name="InfoBarSlideIn">
+                    <DoubleAnimation Storyboard.TargetName="InfoBarTransform" Storyboard.TargetProperty="Y" From="-60" To="0" Duration="0:0:0.3">
+                        <DoubleAnimation.EasingFunction>
+                            <CubicEase EasingMode="EaseOut"/>
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                    <DoubleAnimation Storyboard.TargetName="StatusInfoBar" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.3"/>
+                </Storyboard>
+                <Storyboard x:Name="InfoBarSlideOut">
+                    <DoubleAnimation Storyboard.TargetName="InfoBarTransform" Storyboard.TargetProperty="Y" From="0" To="-60" Duration="0:0:0.25">
+                        <DoubleAnimation.EasingFunction>
+                            <CubicEase EasingMode="EaseIn"/>
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                    <DoubleAnimation Storyboard.TargetName="StatusInfoBar" Storyboard.TargetProperty="Opacity" From="1" To="0" Duration="0:0:0.25"/>
+                </Storyboard>
             </ResourceDictionary>
         </Grid.Resources>
 
         <Grid x:Name="AppTitleBar" Grid.Row="0" Background="Transparent" VerticalAlignment="Stretch">
             <Grid x:Name="ControlContainer" HorizontalAlignment="Center" VerticalAlignment="Center" Height="32">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -61,8 +106,22 @@
                     <TextBlock x:Name="MatchCountText" VerticalAlignment="Center" Margin="6,0,0,0" MinWidth="36"
                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
+
+                <Button x:Name="RefreshButton" x:Uid="RefreshButton" Grid.Column="3" Padding="0" Width="32" Height="32" Background="Transparent" Style="{StaticResource ButtonRevealStyle}" Margin="4,0,0,0" Visibility="Collapsed" VerticalAlignment="Center" Click="RefreshButton_Click">
+                    <FontIcon x:Name="RefreshIcon" FontSize="14" Glyph="&#xE72C;">
+                        <FontIcon.RenderTransform>
+                            <RotateTransform x:Name="RefreshIconRotation" CenterX="7" CenterY="7"/>
+                        </FontIcon.RenderTransform>
+                    </FontIcon>
+                </Button>
             </Grid>
         </Grid>
+
+        <InfoBar x:Name="StatusInfoBar" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Center" IsOpen="False" IsClosable="False" Canvas.ZIndex="99" Opacity="0" Margin="0,2,0,0" Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}">
+            <InfoBar.RenderTransform>
+                <TranslateTransform x:Name="InfoBarTransform" Y="-60"/>
+            </InfoBar.RenderTransform>
+        </InfoBar>
 
         <ListView x:Name="FeaturesListView" Grid.Row="1"
           ItemsSource="{x:Bind FilteredItems}"
@@ -74,13 +133,13 @@
                     </interactivity:Interaction.Behaviors>
                     <ct:DataTable x:Name="HeaderDataTable" ColumnSpacing="12" Background="Transparent" SizeChanged="HeaderTable_SizeChanged">
                         <ct:DataColumn x:Name="ColIdColumn" CanResize="True" DesiredWidth="200" SizeChanged="HeaderTable_SizeChanged">
-                            <TextBlock x:Name="ColIdHeader" FontWeight="SemiBold" FontSize="14" TextWrapping="NoWrap" VerticalAlignment="Center"/>
+                            <TextBlock x:Uid="ColIdHeader" FontWeight="SemiBold" FontSize="14" TextWrapping="NoWrap" VerticalAlignment="Center"/>
                         </ct:DataColumn>
                         <ct:DataColumn x:Name="ColVariantColumn" CanResize="True" DesiredWidth="120" SizeChanged="HeaderTable_SizeChanged">
-                            <TextBlock x:Name="ColVariantHeader" FontWeight="SemiBold" FontSize="14" TextWrapping="NoWrap" VerticalAlignment="Center"/>
+                            <TextBlock x:Uid="ColVariantHeader" FontWeight="SemiBold" FontSize="14" TextWrapping="NoWrap" VerticalAlignment="Center"/>
                         </ct:DataColumn>
                         <ct:DataColumn x:Name="ColDescriptionColumn" DesiredWidth="*">
-                            <TextBlock x:Name="ColDescriptionHeader" FontWeight="SemiBold" FontSize="14" TextWrapping="NoWrap" VerticalAlignment="Center"/>
+                            <TextBlock x:Uid="ColDescriptionHeader" FontWeight="SemiBold" FontSize="14" TextWrapping="NoWrap" VerticalAlignment="Center"/>
                         </ct:DataColumn>
                         <ct:DataColumn CanResize="False" DesiredWidth="2">
                             <Border/>
@@ -90,36 +149,157 @@
             </ListView.Header>
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:FeatureEntry">
-                    <ct:DataRow>
-                        <TextBlock VerticalAlignment="Center" IsTextSelectionEnabled="True" TextWrapping="NoWrap"
-                           SelectionFlyout="{x:Null}" ContextFlyout="{x:Null}"
-                           local:SearchHighlight.SourceText="{x:Bind Id}"
-                           local:SearchHighlight.Query="{x:Bind Query, Mode=OneWay}"
-                           local:SearchHighlight.CaseSensitive="{x:Bind CaseSensitive, Mode=OneWay}"
-                           local:SearchHighlight.IsCurrentField="{x:Bind IdIsCurrent, Mode=OneWay}"
-                           local:SearchHighlight.CurrentMatchPos="{x:Bind CurrentMatchPos, Mode=OneWay}"/>
-                        <TextBlock VerticalAlignment="Center" IsTextSelectionEnabled="True" TextWrapping="NoWrap"
-                           SelectionFlyout="{x:Null}" ContextFlyout="{x:Null}"
-                           local:SearchHighlight.SourceText="{x:Bind Variant}"
-                           local:SearchHighlight.Query="{x:Bind Query, Mode=OneWay}"
-                           local:SearchHighlight.CaseSensitive="{x:Bind CaseSensitive, Mode=OneWay}"
-                           local:SearchHighlight.IsCurrentField="{x:Bind VariantIsCurrent, Mode=OneWay}"
-                           local:SearchHighlight.CurrentMatchPos="{x:Bind CurrentMatchPos, Mode=OneWay}"/>
-                        <TextBlock VerticalAlignment="Top" IsTextSelectionEnabled="True" TextWrapping="Wrap"
-                           SelectionFlyout="{x:Null}" ContextFlyout="{x:Null}"
-                           local:SearchHighlight.SourceText="{x:Bind Description}"
-                           local:SearchHighlight.Query="{x:Bind Query, Mode=OneWay}"
-                           local:SearchHighlight.CaseSensitive="{x:Bind CaseSensitive, Mode=OneWay}"
-                           local:SearchHighlight.IsCurrentField="{x:Bind DescIsCurrent, Mode=OneWay}"
-                           local:SearchHighlight.CurrentMatchPos="{x:Bind CurrentMatchPos, Mode=OneWay}"/>
-                        <Border/>
-                    </ct:DataRow>
+                    <Grid Background="Transparent" Padding="12,4,12,4" Tag="{x:Bind}">
+                        <Grid.ContextFlyout>
+                            <MenuFlyout Opening="FeatureRowMenuFlyout_Opening">
+                                <MenuFlyoutItem x:Uid="Menu_EnableFeature" Click="CmdEnable_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE73E;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem x:Uid="Menu_DisableFeature" Click="CmdDisable_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE711;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem x:Uid="Menu_RestoreFeature" Click="CmdRestore_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE777;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem x:Uid="Menu_CopyText" Click="CmdCopy_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE8C8;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem x:Uid="Menu_SelectAll" Click="CmdSelectAll_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE8B3;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </Grid.ContextFlyout>
+                        <ct:DataRow>
+                            <TextBlock VerticalAlignment="Center" IsTextSelectionEnabled="True" TextWrapping="NoWrap"
+                               SelectionFlyout="{x:Null}"
+                               local:SearchHighlight.SourceText="{x:Bind Id}"
+                               local:SearchHighlight.Query="{x:Bind Query, Mode=OneWay}"
+                               local:SearchHighlight.CaseSensitive="{x:Bind CaseSensitive, Mode=OneWay}"
+                               local:SearchHighlight.IsCurrentField="{x:Bind IdIsCurrent, Mode=OneWay}"
+                               local:SearchHighlight.CurrentMatchPos="{x:Bind CurrentMatchPos, Mode=OneWay}">
+                                <TextBlock.ContextFlyout>
+                            <MenuFlyout Opening="FeatureRowMenuFlyout_Opening">
+                                <MenuFlyoutItem x:Uid="Menu_EnableFeature" Click="CmdEnable_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE73E;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem x:Uid="Menu_DisableFeature" Click="CmdDisable_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE711;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem x:Uid="Menu_RestoreFeature" Click="CmdRestore_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE777;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem x:Uid="Menu_CopyText" Click="CmdCopy_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE8C8;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem x:Uid="Menu_SelectAll" Click="CmdSelectAll_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE8B3;"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>                                </TextBlock.ContextFlyout>
+                            </TextBlock>
+                            <TextBlock VerticalAlignment="Center" IsTextSelectionEnabled="True" TextWrapping="NoWrap"
+                               SelectionFlyout="{x:Null}"
+                               local:SearchHighlight.SourceText="{x:Bind Variant}"
+                               local:SearchHighlight.Query="{x:Bind Query, Mode=OneWay}"
+                               local:SearchHighlight.CaseSensitive="{x:Bind CaseSensitive, Mode=OneWay}"
+                               local:SearchHighlight.IsCurrentField="{x:Bind VariantIsCurrent, Mode=OneWay}"
+                               local:SearchHighlight.CurrentMatchPos="{x:Bind CurrentMatchPos, Mode=OneWay}">
+                                <TextBlock.ContextFlyout>
+                                    <MenuFlyout Opening="FeatureRowMenuFlyout_Opening">
+                                        <MenuFlyoutItem x:Uid="Menu_EnableFeature" Click="CmdEnable_Click">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE73E;"/>
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutItem x:Uid="Menu_DisableFeature" Click="CmdDisable_Click">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE711;"/>
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutItem x:Uid="Menu_RestoreFeature" Click="CmdRestore_Click">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE777;"/>
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutSeparator/>
+                                        <MenuFlyoutItem x:Uid="Menu_CopyText" Click="CmdCopy_Click">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE8C8;"/>
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutItem x:Uid="Menu_SelectAll" Click="CmdSelectAll_Click">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE8B3;"/>
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                    </MenuFlyout>
+                                </TextBlock.ContextFlyout>                            </TextBlock>
+                            <TextBlock VerticalAlignment="Top" IsTextSelectionEnabled="True" TextWrapping="Wrap"
+                               SelectionFlyout="{x:Null}"
+                               local:SearchHighlight.SourceText="{x:Bind Description}"
+                               local:SearchHighlight.Query="{x:Bind Query, Mode=OneWay}"
+                               local:SearchHighlight.CaseSensitive="{x:Bind CaseSensitive, Mode=OneWay}"
+                               local:SearchHighlight.IsCurrentField="{x:Bind DescIsCurrent, Mode=OneWay}"
+                               local:SearchHighlight.CurrentMatchPos="{x:Bind CurrentMatchPos, Mode=OneWay}">
+                                <TextBlock.ContextFlyout>
+                                    <MenuFlyout Opening="FeatureRowMenuFlyout_Opening">
+                                        <MenuFlyoutItem x:Uid="Menu_EnableFeature" Click="CmdEnable_Click">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE73E;"/>
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutItem x:Uid="Menu_DisableFeature" Click="CmdDisable_Click">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE711;"/>
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutItem x:Uid="Menu_RestoreFeature" Click="CmdRestore_Click">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE777;"/>
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutSeparator/>
+                                        <MenuFlyoutItem x:Uid="Menu_CopyText" Click="CmdCopy_Click">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE8C8;"/>
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutItem x:Uid="Menu_SelectAll" Click="CmdSelectAll_Click">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE8B3;"/>
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                    </MenuFlyout>
+                                </TextBlock.ContextFlyout>                            </TextBlock>
+                            <Border/>
+                        </ct:DataRow>
+                    </Grid>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-            <ListView.ItemContainerStyle>
+            </ListView.ItemTemplate>            <ListView.ItemContainerStyle>
                 <Style BasedOn="{StaticResource ListViewItemRevealStyle}" TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    <Setter Property="Padding" Value="12,4,12,4"/>
+                    <Setter Property="Padding" Value="0"/>
                 </Style>
             </ListView.ItemContainerStyle>
         </ListView>

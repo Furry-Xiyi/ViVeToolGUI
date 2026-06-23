@@ -152,15 +152,38 @@ namespace ViVeToolGUI.Pages
         {
             if (VariantModeComboBox == null || VariantNumberBox == null)
                 return;
-
-            if (VariantModeComboBox.SelectedItem is not ComboBoxItem item)
+            // 索引 1 对应 Custom，0 对应 None
+            bool custom = VariantModeComboBox.SelectedIndex == 1;
+            _variantMode = custom ? "Custom" : "None";
+            VariantNumberLabel.Visibility = custom ? Visibility.Visible : Visibility.Collapsed;
+            VariantNumberPanel.Visibility = custom ? Visibility.Visible : Visibility.Collapsed;
+            if (!custom)
+            {
+                VariantNumberBox.Value = double.NaN;
+                VariantPayloadNumberBox.Value = double.NaN;
+                VariantPayloadKindComboBox.SelectedIndex = 0;
+                VariantPayloadNumberBox.Visibility = Visibility.Collapsed;
+                VariantPayloadLabel.Visibility = Visibility.Collapsed;
+            }
+        }
+        private void VariantPayloadKindComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (VariantPayloadKindComboBox == null || VariantPayloadNumberBox == null)
                 return;
-
-            _variantMode = item.Tag?.ToString() ?? "None";
-            VariantNumberBox.IsEnabled = _variantMode == "Custom";
-
-            if (_variantMode != "Custom")
-                VariantNumberBox.Value = 0;
+            // 0: None, 1: Resident, 2: External
+            int index = VariantPayloadKindComboBox.SelectedIndex;
+            string kind = index switch
+            {
+                1 => "Resident",
+                2 => "External",
+                _ => "None"
+            };
+            bool showPayload = kind != "None" && _variantMode == "Custom";
+            VariantPayloadNumberBox.Visibility = showPayload ? Visibility.Visible : Visibility.Collapsed;
+            VariantPayloadLabel.Visibility = showPayload ? Visibility.Visible : Visibility.Collapsed;
+            VariantPayloadNumberBox.IsEnabled = showPayload;
+            if (!showPayload)
+                VariantPayloadNumberBox.Value = double.NaN;
         }
 
         private void FeatureIDTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -282,19 +305,31 @@ namespace ViVeToolGUI.Pages
                 string idArg = BuildIdArgument(ids);
                 string arguments = $"{action} /id:{idArg}";
 
-                switch (_variantMode)
+                if (_variantMode == "Custom")
                 {
-                    case "Default":
-                        arguments += " variant:default";
-                        break;
-                    case "Clear":
-                        arguments += " variant:clear";
-                        break;
-                    case "Custom":
-                        int variant = (int)VariantNumberBox.Value;
-                        if (variant > 0)
-                            arguments += $" variant:{variant}";
-                        break;
+                    if (!double.IsNaN(VariantNumberBox.Value))
+                    {
+                        uint variant = (uint)VariantNumberBox.Value;
+                        arguments += $" /variant:{variant}";
+                    }
+
+                    int index = VariantPayloadKindComboBox.SelectedIndex;
+                    string payloadKind = index switch
+                    {
+                        1 => "Resident",
+                        2 => "External",
+                        _ => "None"
+                    };
+                    if (payloadKind != "None")
+                    {
+                        arguments += $" /variantpayloadkind:{payloadKind}";
+
+                        if (!double.IsNaN(VariantPayloadNumberBox.Value))
+                        {
+                            uint payload = (uint)VariantPayloadNumberBox.Value;
+                            arguments += $" /variantpayload:{payload}";
+                        }
+                    }
                 }
 
                 var result = await MainWindow.ExecuteViVeToolCommandAsync(arguments);
@@ -492,7 +527,13 @@ namespace ViVeToolGUI.Pages
             RestoreButton.IsEnabled = valid;
             FeatureIDTextBox.IsEnabled = enabled;
             VariantModeComboBox.IsEnabled = enabled;
-            VariantNumberBox.IsEnabled = enabled && _variantMode == "Custom";
+
+            bool custom = enabled && _variantMode == "Custom";
+            VariantNumberBox.IsEnabled = custom;
+            VariantPayloadKindComboBox.IsEnabled = custom;
+
+            bool hasPayloadKind = VariantPayloadKindComboBox.SelectedIndex == 1 || VariantPayloadKindComboBox.SelectedIndex == 2;
+            VariantPayloadNumberBox.IsEnabled = custom && hasPayloadKind;
         }
 
         private async Task ShowErrorAsync(string message)

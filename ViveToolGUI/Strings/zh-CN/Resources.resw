@@ -225,13 +225,25 @@
   <data name="Menu_RestoreFeature.Text" xml:space="preserve">
     <value>还原</value>
   </data>
-  <data name="Menu_CopyFeatureId.Text" xml:space="preserve">
-    <value>复制功能 ID</value>
-  </data>
   <data name="Menu_CopyText.Text" xml:space="preserve">
     <value>复制文本</value>
   </data>
   <data name="Menu_SelectAll.Text" xml:space="preserve">
+    <value>全选</value>
+  </data>
+  <data name="Menu_EnableFeatureButton.Label" xml:space="preserve">
+    <value>启用</value>
+  </data>
+  <data name="Menu_DisableFeatureButton.Label" xml:space="preserve">
+    <value>禁用</value>
+  </data>
+  <data name="Menu_RestoreFeatureButton.Label" xml:space="preserve">
+    <value>还原</value>
+  </data>
+  <data name="Menu_CopyTextButton.Label" xml:space="preserve">
+    <value>复制文本</value>
+  </data>
+  <data name="Menu_SelectAllButton.Label" xml:space="preserve">
     <value>全选</value>
   </data>
   <data name="Export_Success" xml:space="preserve">
@@ -479,5 +491,44 @@
   </data>
   <data name="Settings_NotificationCard.Description" xml:space="preserve">
     <value>当查询完本机 Feature ID 后若窗口未聚焦则发送通知</value>
+  </data>
+  <data name="InfoBar_Fetching" xml:space="preserve">
+    <value>正在拉取已整理的最新 Feature ID...</value>
+  </data>
+  <data name="InfoBar_FetchSuccess" xml:space="preserve">
+    <value>已成功拉取最新 Feature ID。</value>
+  </data>
+  <data name="InfoBar_FetchError" xml:space="preserve">
+    <value>拉取 Feature ID 失败：{0}</value>
+  </data>
+  <data name="InfoBar_FetchTimeout" xml:space="preserve">
+    <value>拉取超时。</value>
+  </data>
+  <data name="RefreshButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="ColIdHeader.Text" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="ColVariantHeader.Text" xml:space="preserve">
+    <value>变体</value>
+  </data>
+  <data name="ColDescriptionHeader.Text" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="Menu_CopyFeatureId.Text" xml:space="preserve">
+    <value>复制功能 ID</value>
+  </data>
+  <data name="EnableDisable_VariantPayload.Text" xml:space="preserve">
+    <value>变体载荷</value>
+  </data>
+  <data name="VariantPayloadKind_None.Content" xml:space="preserve">
+    <value>默认</value>
+  </data>
+  <data name="VariantPayloadKind_Resident.Content" xml:space="preserve">
+    <value>常驻 (数值)</value>
+  </data>
+  <data name="VariantPayloadKind_External.Content" xml:space="preserve">
+    <value>外部 (数值)</value>
   </data>
 </root>

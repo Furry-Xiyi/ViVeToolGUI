@@ -388,10 +388,6 @@ namespace ViVeToolGUI
             sb.Begin();
         }
 
-        private void TitleBar_BackRequested(TitleBar sender, object args)
-        {
-            if (ContentFrame.CanGoBack) ContentFrame.GoBack();
-        }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {

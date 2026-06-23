@@ -237,7 +237,11 @@
                                     Width="{ThemeResource NavigationViewItemOnLeftIconBoxHeight}"
                                     Height="{ThemeResource NavigationViewItemOnLeftIconBoxHeight}"
                                     Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}"
-                                    HorizontalAlignment="Center">
+                                    HorizontalAlignment="Center"
+                                    RenderTransformOrigin="0.5,0.5">
+                                    <Viewbox.RenderTransform>
+                                        <TranslateTransform/>
+                                    </Viewbox.RenderTransform>
                                     <ContentPresenter
                                         x:Name="Icon"
                                         HorizontalContentAlignment="Stretch"
@@ -280,21 +284,41 @@
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="PointerStates">
-                                <VisualState x:Name="Normal" />
+                                <VisualStateGroup.Transitions>
+                                    <VisualTransition From="PointerOver" To="Normal" GeneratedDuration="0:0:0.2"/>
+                                    <VisualTransition From="Pressed" To="Normal" GeneratedDuration="0:0:0.15"/>
+                                    <VisualTransition From="Pressed" To="PointerOver" GeneratedDuration="0:0:0.15"/>
+                                    <VisualTransition From="PointerOverSelected" To="Selected" GeneratedDuration="0:0:0.2"/>
+                                    <VisualTransition From="PressedSelected" To="Selected" GeneratedDuration="0:0:0.15"/>
+                                    <VisualTransition From="PressedSelected" To="PointerOverSelected" GeneratedDuration="0:0:0.15"/>
+                                </VisualStateGroup.Transitions>
+                                <VisualState x:Name="Normal"/>
                                 <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="IconBox" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="-2" Duration="0:0:0.15">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource NavigationViewItemBackgroundPointerOver}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource NavigationViewItemForegroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewItemForegroundPointerOver}" />
-                                        <Setter Target="Icon.(local:AnimatedIcon.State)" Value="PointerOver" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="IconBox" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="2" Duration="0:0:0.1">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource NavigationViewItemBackgroundPressed}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource NavigationViewItemForegroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewItemForegroundPressed}" />
-                                        <Setter Target="Icon.(local:AnimatedIcon.State)" Value="Pressed" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Selected">
@@ -306,20 +330,32 @@
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="PointerOverSelected">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="IconBox" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="-2" Duration="0:0:0.15">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource NavigationViewItemBackgroundSelectedPointerOver}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource NavigationViewSelectionIndicatorForeground}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewItemForegroundSelectedPointerOver}" />
-                                        <Setter Target="Icon.(local:AnimatedIcon.State)" Value="PointerOver" />
                                         <Setter Target="TextBox.Visibility" Value="Collapsed" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="PressedSelected">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="IconBox" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="2" Duration="0:0:0.1">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource NavigationViewItemBackgroundSelectedPressed}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource NavigationViewSelectionIndicatorForeground}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource NavigationViewItemForegroundSelectedPressed}" />
-                                        <Setter Target="Icon.(local:AnimatedIcon.State)" Value="Pressed" />
                                         <Setter Target="TextBox.Visibility" Value="Collapsed" />
                                     </VisualState.Setters>
                                 </VisualState>

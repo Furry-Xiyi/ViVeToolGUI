@@ -225,13 +225,25 @@
   <data name="Menu_RestoreFeature.Text" xml:space="preserve">
     <value>Restore</value>
   </data>
-  <data name="Menu_CopyFeatureId.Text" xml:space="preserve">
-    <value>Copy Feature ID</value>
-  </data>
   <data name="Menu_CopyText.Text" xml:space="preserve">
     <value>Copy text</value>
   </data>
   <data name="Menu_SelectAll.Text" xml:space="preserve">
+    <value>Select all</value>
+  </data>
+  <data name="Menu_EnableFeatureButton.Label" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="Menu_DisableFeatureButton.Label" xml:space="preserve">
+    <value>Disable</value>
+  </data>
+  <data name="Menu_RestoreFeatureButton.Label" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="Menu_CopyTextButton.Label" xml:space="preserve">
+    <value>Copy text</value>
+  </data>
+  <data name="Menu_SelectAllButton.Label" xml:space="preserve">
     <value>Select all</value>
   </data>
   <data name="Export_Success" xml:space="preserve">
@@ -479,5 +491,44 @@
   </data>
   <data name="Settings_NotificationCard.Description" xml:space="preserve">
     <value>After querying the local Feature ID, send a notification if the window is not focused</value>
+  </data>
+  <data name="InfoBar_Fetching" xml:space="preserve">
+    <value>Fetching the latest organized Feature IDs...</value>
+  </data>
+  <data name="InfoBar_FetchSuccess" xml:space="preserve">
+    <value>Successfully fetched the latest Feature IDs.</value>
+  </data>
+  <data name="InfoBar_FetchError" xml:space="preserve">
+    <value>Failed to fetch Feature IDs: {0}</value>
+  </data>
+  <data name="InfoBar_FetchTimeout" xml:space="preserve">
+    <value>Fetch timed out.</value>
+  </data>
+  <data name="RefreshButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Menu_CopyFeatureId.Text" xml:space="preserve">
+    <value>Copy Feature ID</value>
+  </data>
+  <data name="ColIdHeader.Text" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="ColVariantHeader.Text" xml:space="preserve">
+    <value>Variant</value>
+  </data>
+  <data name="ColDescriptionHeader.Text" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="EnableDisable_VariantPayload.Text" xml:space="preserve">
+    <value>Variant Payload</value>
+  </data>
+  <data name="VariantPayloadKind_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="VariantPayloadKind_Resident.Content" xml:space="preserve">
+    <value>Resident (Numeric)</value>
+  </data>
+  <data name="VariantPayloadKind_External.Content" xml:space="preserve">
+    <value>External (Numeric)</value>
   </data>
 </root>
