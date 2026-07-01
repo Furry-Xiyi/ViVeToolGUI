@@ -1,2 +1,5 @@
-This package includes ViveTool, licensed under GPLv3.
-Source: https://github.com/thebookisclosed/ViVe
+# ⚠This package includes ViveTool, licensed under GPLv3.
+
+ViveTool source:
+
+https://github.com/thebookisclosed/ViVe
