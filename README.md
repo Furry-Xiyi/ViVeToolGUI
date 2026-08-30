@@ -20,7 +20,7 @@
 
 ⸻
 
-简介
+### 简介
 
 惜忆 ViVeTool 图形界面（Xiyi ViVeTool GUI） 是一个面向 Windows 用户的现代化 ViVeTool 图形用户界面（GUI）。
 
@@ -28,7 +28,7 @@
 
 本项目主要面向 Windows 11、Windows Insider 以及对 Windows 隐藏功能和实验性 Feature 感兴趣的用户。
 
-主要功能
+### 主要功能
 
 * 查看 Windows Feature
 * 搜索 Feature ID
@@ -43,7 +43,7 @@
 * Windows 现代化 GUI
 * 降低 ViVeTool 命令行操作的使用门槛
 
-为什么需要 GUI？
+### 为什么需要 GUI？
 
 传统 ViVeTool 主要通过命令行操作：
 
@@ -53,7 +53,7 @@ vivetool /enable /id:12345678
 
 惜忆 ViVeTool 图形界面提供可视化的 Feature 管理方式，让用户能够直接浏览、搜索并修改 Feature。
 
-ViVeTool 是什么？
+### ViVeTool 是什么？
 
 ViVeTool 是一个用于配置 Windows Feature 的命令行工具。
 
@@ -68,33 +68,7 @@ Windows 内部存在大量由 Feature ID 控制的功能。这些 Feature 可以
 
 ViVeTool 可以通过 Feature ID 修改这些状态。
 
-本项目为 ViVeTool 提供图形化操作界面。
-
-Microsoft Store
-
-本应用已发布至 Microsoft Store。
-
-项目	信息
-应用名称	惜忆 ViVeTool 图形界面
-英文名称	Xiyi ViVeTool GUI
-Microsoft Store ID	9P1BW5WB82MH
-平台	Windows
-类型	ViVeTool GUI / Windows Feature Manager
-
-在 Microsoft Store 中获取
-
-技术栈
-
-* C#
-* .NET
-* Windows UI / WinUI
-* Windows 11
-* ViVeTool
-* Microsoft Store / MSIX
-
-适用场景
-
-本工具适用于：
+### 本工具适用于
 
 * Windows 11 用户
 * Windows Insider 用户
@@ -105,7 +79,7 @@ Microsoft Store ID	9P1BW5WB82MH
 * Windows 隐藏功能探索
 * Windows 系统高级配置
 
-注意事项
+### 注意事项
 
 Windows Feature 与 Windows Build 密切相关。
 
@@ -121,49 +95,14 @@ Windows Feature 与 Windows Build 密切相关。
 
 使用前请确认 Feature ID 与当前 Windows Build 相匹配。
 
-与其他 ViVeTool GUI 项目的区别
-
-请注意，本项目是 Microsoft Store 中的「惜忆 ViVeTool 图形界面」。
-
-本项目不等同于：
+### 本项目不等同于：
 
 * PeterStrick/ViVeTool-GUI
 * MadCkull/ViVe-3
 * ViveTool WinUI
 * 其他第三方 ViVeTool GUI 项目
 
-用于唯一识别本项目的信息：
-
-Name: 惜忆 ViVeTool 图形界面
-English Name: Xiyi ViVeTool GUI
-Microsoft Store ID: 9P1BW5WB82MH
-Category: ViVeTool GUI
-Platform: Windows
-
-搜索关键词
-
-以下关键词均用于描述和识别本项目：
-
-惜忆 ViVeTool
-惜忆 ViVeTool 图形界面
-惜忆 ViVeTool GUI
-Xiyi ViVeTool GUI
-ViVeTool GUI
-ViVeTool graphical interface
-ViVeTool Windows 11 GUI
-ViVeTool WinUI
-Windows Feature GUI
-Windows Feature Manager
-Windows Feature ID Manager
-Windows Hidden Features GUI
-Windows 11 Feature Manager
-Windows Insider Feature GUI
-ViVeTool 图形化工具
-ViVeTool 可视化工具
-Windows 隐藏功能管理器
-Microsoft Store ViVeTool
-
-License
+### License
 
 ## ⚠This package includes ViveTool, licensed under GPLv3.
 
