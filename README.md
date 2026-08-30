@@ -90,7 +90,7 @@ Windows Feature 与 Windows Build 密切相关。
 
 同一个 Feature ID 在不同 Windows 版本、内部版本或 Insider Channel 中可能具有不同的行为，也可能不存在。
 
-启用实验性 Feature 可能造成：
+### 启用实验性 Feature 可能造成：
 
 * 功能异常
 * UI 异常
@@ -108,7 +108,7 @@ Windows Feature 与 Windows Build 密切相关。
 
 ### 许可证
 
-⚠️ 本软件包含 ViVeTool，ViVeTool 根据 GPLv3 许可证授权。
+#### ⚠️ 本软件包含 ViVeTool，ViVeTool 根据 GPLv3 许可证授权。
 
 ViVeTool 源代码：
 
