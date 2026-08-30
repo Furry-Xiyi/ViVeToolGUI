@@ -1,14 +1,16 @@
 Xiyi ViVeTool GUI
 
-<p align="center">
-  <strong>A modern graphical user interface for ViVeTool on Windows</strong>
+⸻
+
+<p align="right">
+  <a href="README.md">🇨🇳简体中文</a>
 </p>
 <p align="center">
-  <a href="README.md">简体中文</a>
+  <strong>A Modern Graphical Interface for ViVeTool on Windows</strong>
 </p>
 <p align="center">
   <a href="https://apps.microsoft.com/detail/9P1BW5WB82MH">
-    <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="220" alt="Get it from the Microsoft Store">
+    <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="220" alt="Download from the Microsoft Store">
   </a>
 </p>
 <p align="center">
@@ -27,15 +29,15 @@ Introduction
 
 Xiyi ViVeTool GUI is a modern graphical user interface (GUI) for ViVeTool designed for Windows users.
 
-It provides a visual interface for common ViVeTool operations, allowing users to view, search, and manage Windows Features without manually entering ViVeTool commands.
+It converts ViVeTool command-line operations into an intuitive graphical interface, allowing users to view, search, and manage Windows Features without manually entering ViVeTool commands.
 
-The project is primarily intended for Windows 11 users, Windows Insider users, and users interested in Windows hidden features and experimental Features.
+This project is primarily intended for Windows 11 users, Windows Insiders, and users interested in Windows hidden features and experimental Features.
 
-Features
+Main Features
 
 * View Windows Features
-* Search by Feature ID
-* Search by Feature name
+* Search Feature IDs
+* Search Feature names
 * View Feature states
 * Enable Features
 * Disable Features
@@ -44,23 +46,23 @@ Features
 * Manage Boot State
 * Perform ViVeTool operations through a graphical interface
 * Modern Windows GUI
-* Simplify ViVeTool usage for users who prefer a graphical interface
+* Lower the barrier to using ViVeTool from the command line
 
-Why a GUI?
+Why Do We Need a GUI?
 
 ViVeTool is traditionally operated through the command line:
 
 vivetool /enable /id:12345678
 
-The command-line interface is highly efficient for advanced Windows users. However, it requires users to remember command syntax and Feature IDs.
+For advanced users familiar with Windows internal Features, the command line is highly efficient. However, ordinary users need to remember command syntax and Feature IDs.
 
-Xiyi ViVeTool GUI provides a visual way to browse, search, and modify Windows Features.
+Xiyi ViVeTool GUI provides a visual way to manage Features, allowing users to browse, search, and modify Windows Features directly.
 
-What is ViVeTool?
+What Is ViVeTool?
 
-ViVeTool is a command-line utility used to configure Windows Features.
+ViVeTool is a command-line tool used to configure Windows Features.
 
-Windows contains many internal Features controlled by Feature IDs. These Features can have different states, including:
+Windows contains a large number of Features controlled by Feature IDs. These Features can have different states, such as:
 
 * Default
 * Enabled
@@ -71,7 +73,7 @@ Windows contains many internal Features controlled by Feature IDs. These Feature
 
 ViVeTool can modify these states using Feature IDs.
 
-Suitable For
+This Tool Is Suitable For
 
 * Windows 11 users
 * Windows Insider users
@@ -84,7 +86,7 @@ Suitable For
 
 Notes
 
-Windows Features are closely related to the Windows Build version.
+Windows Features are closely related to the Windows Build.
 
 The same Feature ID may behave differently, or may not exist, across different Windows versions, builds, or Insider Channels.
 
@@ -98,16 +100,16 @@ Enabling experimental Features may cause:
 
 Please make sure that the Feature ID is compatible with your current Windows Build before using it.
 
-This project is not:
+This Project Is Not a Fork Of:
 
 * PeterStrick/ViVeTool-GUI
 * MadCkull/ViVe-3
-* ViveTool WinUI
 * Other third-party ViVeTool GUI projects
 
 License
 
-⚠️ This package includes ViVeTool, licensed under GPLv3.
+⚠️ This software includes ViVeTool, which is licensed under GPLv3.
 
-ViVeTool source:
+ViVeTool source code:
 
+https://github.com/thebookisclosed/ViVe
