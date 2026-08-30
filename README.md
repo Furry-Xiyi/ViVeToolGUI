@@ -1,7 +1,10 @@
-# 惜忆 ViVeTool 图形界面
+惜忆 ViVeTool 图形界面
 
 <p align="center">
   <strong>现代化的 Windows ViVeTool 图形界面</strong>
+</p>
+<p align="center">
+  <a href="README_EN.md">English</a>
 </p>
 <p align="center">
   <a href="https://apps.microsoft.com/detail/9P1BW5WB82MH">
@@ -18,17 +21,17 @@
   <img src="https://img.shields.io/badge/ViVeTool-GUI-5C2D91?style=flat-square" alt="ViVeTool GUI">
 </p>
 
----
+⸻
 
-### 简介
+简介
 
-惜忆 ViVeTool 图形界面（Xiyi ViVeTool GUI） 是一个面向 Windows 用户的现代化 ViVeTool 图形用户界面（GUI）。
+惜忆 ViVeTool 图形界面（Xiyi ViVeTool GUI）是一个面向 Windows 用户的现代化 ViVeTool 图形用户界面（GUI）。
 
 它将 ViVeTool 的命令行操作转换为直观的图形界面，使用户可以查看、搜索和管理 Windows Feature，而无需手动输入 ViVeTool 命令。
 
 本项目主要面向 Windows 11、Windows Insider 以及对 Windows 隐藏功能和实验性 Feature 感兴趣的用户。
 
-### 主要功能
+主要功能
 
 * 查看 Windows Feature
 * 搜索 Feature ID
@@ -43,7 +46,7 @@
 * Windows 现代化 GUI
 * 降低 ViVeTool 命令行操作的使用门槛
 
-### 为什么需要 GUI？
+为什么需要 GUI？
 
 传统 ViVeTool 主要通过命令行操作：
 
@@ -53,7 +56,7 @@ vivetool /enable /id:12345678
 
 惜忆 ViVeTool 图形界面提供可视化的 Feature 管理方式，让用户能够直接浏览、搜索并修改 Feature。
 
-### ViVeTool 是什么？
+ViVeTool 是什么？
 
 ViVeTool 是一个用于配置 Windows Feature 的命令行工具。
 
@@ -68,7 +71,7 @@ Windows 内部存在大量由 Feature ID 控制的功能。这些 Feature 可以
 
 ViVeTool 可以通过 Feature ID 修改这些状态。
 
-### 本工具适用于
+本工具适用于
 
 * Windows 11 用户
 * Windows Insider 用户
@@ -79,7 +82,7 @@ ViVeTool 可以通过 Feature ID 修改这些状态。
 * Windows 隐藏功能探索
 * Windows 系统高级配置
 
-### 注意事项
+注意事项
 
 Windows Feature 与 Windows Build 密切相关。
 
@@ -95,16 +98,16 @@ Windows Feature 与 Windows Build 密切相关。
 
 使用前请确认 Feature ID 与当前 Windows Build 相匹配。
 
-### 本项目不等同于：
+本项目不等同于：
 
 * PeterStrick/ViVeTool-GUI
 * MadCkull/ViVe-3
 * ViveTool WinUI
 * 其他第三方 ViVeTool GUI 项目
 
-##许可证
+许可证
 
-⚠️ 本软件包含 ViVeTool本体，ViVeTool 根据 GNU General Public License v3.0（GPLv3） 许可证授权。
+⚠️ 本软件包含 ViVeTool，ViVeTool 根据 GPLv3 许可证授权。
 
 ViVeTool 源代码：
 
