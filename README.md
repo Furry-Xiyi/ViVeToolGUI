@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/ViVeTool-GUI-5C2D91?style=flat-square" alt="ViVeTool GUI">
 </p>
 
-⸻
+---
 
 ### 简介
 
