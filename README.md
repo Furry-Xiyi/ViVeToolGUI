@@ -10,9 +10,14 @@
 
 <p align="center">
   <a href="https://apps.microsoft.com/detail/9P1BW5WB82MH">
-    <img src="https://get.microsoft.com/images/zh-cn%20dark.svg" width="220" alt="Download from the Microsoft Store">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://get.microsoft.com/images/zh-cn%20dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="https://get.microsoft.com/images/zh-cn%20light.svg">
+      <img src="https://get.microsoft.com/images/zh-cn%20light.svg" width="220" alt="从 Microsoft Store 获取">
+    </picture>
   </a>
 </p>
+
 <p align="center">
   <a href="https://apps.microsoft.com/detail/9P1BW5WB82MH">
     <img src="https://img.shields.io/badge/Microsoft%20Store-Download-0078D4?style=flat-square&logo=microsoft&logoColor=white" alt="Microsoft Store">
