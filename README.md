@@ -27,7 +27,7 @@
 
 ### 简介
 
-惜忆 ViVeTool 图形界面（Xiyi ViVeTool GUI）是一个面向 Windows 用户的现代化 ViVeTool 图形用户界面（GUI）。
+惜忆 ViVeTool 图形界面 是一个面向 Windows 用户的使用 WinUI 3 构建的现代化 ViVeTool 图形用户界面。
 
 它将 ViVeTool 的命令行操作转换为直观的图形界面，使用户可以查看、搜索和管理 Windows Feature，而无需手动输入 ViVeTool 命令。
 
