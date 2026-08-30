@@ -20,22 +20,6 @@
 
 ⸻
 
-下载
-
-推荐直接从 Microsoft Store 安装：
-
-<p align="center">
-  <a href="https://apps.microsoft.com/detail/9P1BW5WB82MH">
-    <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="240" alt="Get it from Microsoft">
-  </a>
-</p>
-
-Microsoft Store 应用名称： 惜忆 ViVeTool 图形界面
-
-Microsoft Store ID： 9P1BW5WB82MH
-
-⸻
-
 简介
 
 惜忆 ViVeTool 图形界面（Xiyi ViVeTool GUI） 是一个面向 Windows 用户的现代化 ViVeTool 图形用户界面（GUI）。
