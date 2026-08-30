@@ -25,7 +25,7 @@
 
 ### Introduction
 
-Xiyi ViVeTool GUI is a modern graphical user interface (GUI) for ViVeTool designed for Windows users.
+Xiyi ViVeTool GUI is a modern graphical user interface for ViVeTool designed for Windows users and built with WinUI 3.
 
 It converts ViVeTool command-line operations into an intuitive graphical interface, allowing users to view, search, and manage Windows Features without manually entering ViVeTool commands.
 
