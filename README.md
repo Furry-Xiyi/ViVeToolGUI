@@ -102,10 +102,10 @@ Windows Feature 与 Windows Build 密切相关。
 * ViveTool WinUI
 * 其他第三方 ViVeTool GUI 项目
 
-### License
+##许可证
 
-## ⚠This package includes ViveTool, licensed under GPLv3.
+⚠️ 本软件包含 ViVeTool本体，ViVeTool 根据 GNU General Public License v3.0（GPLv3） 许可证授权。
 
-ViveTool source:
+ViVeTool 源代码：
 
 https://github.com/thebookisclosed/ViVe
