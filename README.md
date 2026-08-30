@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://apps.microsoft.com/detail/9P1BW5WB82MH">
-    <img src="https://get.microsoft.com/images/zh-cn.svg" width="220" alt="Download from the Microsoft Store">
+    <img src="https://get.microsoft.com/images/zh-cn%20dark.svg" width="220" alt="Download from the Microsoft Store">
   </a>
 </p>
 <p align="center">
