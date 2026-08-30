@@ -1,6 +1,4 @@
-Xiyi ViVeTool GUI
-
-⸻
+# Xiyi ViVeTool GUI
 
 <p align="right">
   <a href="README.md">🇨🇳简体中文</a>
@@ -23,9 +21,9 @@ Xiyi ViVeTool GUI
   <img src="https://img.shields.io/badge/ViVeTool-GUI-5C2D91?style=flat-square" alt="ViVeTool GUI">
 </p>
 
-⸻
+---
 
-Introduction
+### Introduction
 
 Xiyi ViVeTool GUI is a modern graphical user interface (GUI) for ViVeTool designed for Windows users.
 
@@ -33,7 +31,7 @@ It converts ViVeTool command-line operations into an intuitive graphical interfa
 
 This project is primarily intended for Windows 11 users, Windows Insiders, and users interested in Windows hidden features and experimental Features.
 
-Main Features
+### Main Features
 
 * View Windows Features
 * Search Feature IDs
@@ -48,7 +46,7 @@ Main Features
 * Modern Windows GUI
 * Lower the barrier to using ViVeTool from the command line
 
-Why Do We Need a GUI?
+### Why Do We Need a GUI?
 
 ViVeTool is traditionally operated through the command line:
 
@@ -58,7 +56,7 @@ For advanced users familiar with Windows internal Features, the command line is 
 
 Xiyi ViVeTool GUI provides a visual way to manage Features, allowing users to browse, search, and modify Windows Features directly.
 
-What Is ViVeTool?
+### What Is ViVeTool?
 
 ViVeTool is a command-line tool used to configure Windows Features.
 
@@ -73,7 +71,7 @@ Windows contains a large number of Features controlled by Feature IDs. These Fea
 
 ViVeTool can modify these states using Feature IDs.
 
-This Tool Is Suitable For
+### This Tool Is Suitable For
 
 * Windows 11 users
 * Windows Insider users
@@ -84,13 +82,13 @@ This Tool Is Suitable For
 * Exploring Windows hidden features
 * Advanced Windows configuration
 
-Notes
+### Notes
 
 Windows Features are closely related to the Windows Build.
 
 The same Feature ID may behave differently, or may not exist, across different Windows versions, builds, or Insider Channels.
 
-Enabling experimental Features may cause:
+### Enabling experimental Features may cause:
 
 * Unexpected behavior
 * UI issues
@@ -100,15 +98,15 @@ Enabling experimental Features may cause:
 
 Please make sure that the Feature ID is compatible with your current Windows Build before using it.
 
-This Project Is Not a Fork Of:
+### This Project Is Not a Fork Of:
 
 * PeterStrick/ViVeTool-GUI
 * MadCkull/ViVe-3
 * Other third-party ViVeTool GUI projects
 
-License
+### License
 
-⚠️ This software includes ViVeTool, which is licensed under GPLv3.
+#### ⚠️ This software includes ViVeTool, which is licensed under GPLv3.
 
 ViVeTool source code:
 
